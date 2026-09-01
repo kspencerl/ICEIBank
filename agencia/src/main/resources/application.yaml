@@ -1,3 +1,10 @@
-spring:
-  application:
-    name: agencia
+gencia-routing:
+  host: "localhost"
+  basePort: 4000
+  agencias:
+    - id: 0
+      name: "Nubank"
+    - id: 1
+      name: "Itau"
+    - id: 2
+      name: "Bradesco"
