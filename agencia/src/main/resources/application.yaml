@@ -1,4 +1,7 @@
-gencia-routing:
+server:
+  port: 4000
+
+agencia-routing:
   host: "localhost"
   basePort: 4000
   agencias:
