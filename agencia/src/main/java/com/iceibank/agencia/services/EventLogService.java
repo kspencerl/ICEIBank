@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +28,15 @@ public class EventLogService {
     @PostConstruct
     public void init() {
         try {
-            String fileName = "eventos-agencia-" + currentAgenciaId + ".log";
-            writer = new BufferedWriter(new FileWriter(fileName, true));
+            Path logsDir = Paths.get("logs");
+            if (!Files.exists(logsDir)) {
+                Files.createDirectories(logsDir);
+            }
+
+            Path filePath = logsDir.resolve("eventos-agencia-" + currentAgenciaId + ".log");
+            writer = new BufferedWriter(new FileWriter(filePath.toFile(), true));
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao inicializar o arquivo de log do EventLog", e);
+            throw new RuntimeException("Erro ao inicializar o diretório e arquivo de log", e);
         }
     }
 

@@ -68,4 +68,4 @@ curl -X POST http://localhost:4000/contas/0/sacar \
      -d '{"valor":15}'
 ```
 
-*Após executar as operações, observe que um arquivo `eventos-agencia-0.log` será criado na raiz do projeto contendo os registros JSON com a evolução do Relógio de Lamport.*
+*Após executar as operações, observe que um arquivo `logs/eventos-agencia-0.log` será criado na raiz do projeto contendo os registros JSON com a evolução do Relógio de Lamport.*
