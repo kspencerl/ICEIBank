@@ -1,5 +1,8 @@
 server:
-  port: 4000
+  port: ${SERVER_PORT:4000}
+
+agencia:
+  id: ${AGENCIA_ID:0} # instância em execução
 
 agencia-routing:
   host: "localhost"

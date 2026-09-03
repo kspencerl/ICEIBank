@@ -1,0 +1,57 @@
+package com.iceibank.agencia.services;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iceibank.agencia.model.EventoLog;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+@Service
+@RequiredArgsConstructor
+public class EventLogService {
+
+    @Value("${agencia.id:0}")
+    private int currentAgenciaId;
+
+    private final ObjectMapper objectMapper;
+    private BufferedWriter writer;
+
+    @PostConstruct
+    public void init() {
+        try {
+            String fileName = "eventos-agencia-" + currentAgenciaId + ".log";
+            writer = new BufferedWriter(new FileWriter(fileName, true));
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao inicializar o arquivo de log do EventLog", e);
+        }
+    }
+
+    public void registrarEvento(int lamportTime, String operacao, String detalhes) {
+        EventoLog evento = EventoLog.criar(currentAgenciaId, lamportTime, operacao, detalhes);
+        try {
+            String json = objectMapper.writeValueAsString(evento);
+            writer.write(json);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            System.err.println("Falha ao gravar evento no log da agência " + currentAgenciaId + ": " + e.getMessage());
+        }
+    }
+
+    @PreDestroy
+    public void close() {
+        try {
+            if (writer != null) {
+                writer.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao fechar o BufferedWriter: " + e.getMessage());
+        }
+    }
+}
