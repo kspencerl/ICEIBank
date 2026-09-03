@@ -1,0 +1,3 @@
+{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Ana, saldoInicial: 100.0","relogioParede":"2026-09-03T02:43:39.905470560Z"}
+{"agenciaId":0,"lamportTime":2,"operacao":"DEPOSITO","detalhes":"id: 0, valor: 25.0, novoSaldo: 125.0","relogioParede":"2026-09-03T02:45:48.862930193Z"}
+{"agenciaId":0,"lamportTime":3,"operacao":"SAQUE","detalhes":"id: 0, valor: 15.0, novoSaldo: 110.0","relogioParede":"2026-09-03T02:45:57.118496837Z"}
