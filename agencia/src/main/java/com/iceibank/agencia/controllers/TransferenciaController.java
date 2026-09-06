@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -52,7 +53,7 @@ public class TransferenciaController {
         AgenciaConfig agenciaDestino = appRouting.obterAgenciaResponsavel(req.idDestino());
         int tsDebito = relogio.eventoLocal();
         contaOrigem.setSaldo(contaOrigem.getSaldo() - req.valor());
-        registrar(tsDebito, "TRANSFERENCIA_DEBITO", req);
+        registrar(tsDebito, "TRANSFERENCIA_DEBITO", detalhesTransferencia(req));
 
         if (agenciaDestino.id() == idAgenciaLocal) {
             Conta contaDestino = contas.buscar(req.idDestino());
@@ -64,7 +65,7 @@ public class TransferenciaController {
 
             int tsCredito = relogio.eventoLocal();
             contaDestino.setSaldo(contaDestino.getSaldo() + req.valor());
-            registrar(tsCredito, "TRANSFERENCIA_CREDITO", req);
+            registrar(tsCredito, "TRANSFERENCIA_CREDITO", detalhesTransferencia(req));
             return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (mesma agência)."));
         }
 
@@ -73,8 +74,9 @@ public class TransferenciaController {
             enviarCreditoRemoto(agenciaDestino, req, tsEnvio);
             return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (entre agências)."));
         } catch (Exception erro) {
-            registrar(relogio.eventoLocal(), "TRANSFERENCIA_FALHOU",
-                    req + ", erro: " + erro.getMessage());
+                Map<String, Object> detalhes = detalhesTransferencia(req);
+                detalhes.put("erro", erro.getMessage());
+                registrar(relogio.eventoLocal(), "TRANSFERENCIA_FALHOU", detalhes);
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
                     "erro", "Falha ao contatar agência de destino. Débito já aplicado - inconsistência conhecida (ver Sprint 4)."));
         }
@@ -91,8 +93,10 @@ public class TransferenciaController {
 
         int ts = relogio.aoReceber(req.timestampLamport());
         conta.setSaldo(conta.getSaldo() + req.valor());
-        registrar(ts, "TRANSFERENCIA_CREDITO_REMOTO",
-                "idConta: " + id + ", valor: " + req.valor() + ", origemAgencia: " + req.origemAgencia());
+        registrar(ts, "TRANSFERENCIA_CREDITO_REMOTO", Map.of(
+            "idConta", id,
+            "valor", req.valor(),
+            "origemAgencia", req.origemAgencia()));
 
         return ResponseEntity.ok(Map.of("mensagem", "Crédito remoto aplicado.", "saldoAtual", conta.getSaldo()));
     }
@@ -116,7 +120,15 @@ public class TransferenciaController {
         }
     }
 
-    private void registrar(int timestamp, String operacao, Object detalhes) {
-        registro.registrarEvento(timestamp, operacao, detalhes.toString());
+    private Map<String, Object> detalhesTransferencia(TransferenciaRequest req) {
+        Map<String, Object> detalhes = new LinkedHashMap<>();
+        detalhes.put("idOrigem", req.idOrigem());
+        detalhes.put("idDestino", req.idDestino());
+        detalhes.put("valor", req.valor());
+        return detalhes;
+    }
+
+    private void registrar(int timestamp, String tipo, Object detalhes) {
+        registro.registrarEvento(timestamp, tipo, detalhes);
     }
 }

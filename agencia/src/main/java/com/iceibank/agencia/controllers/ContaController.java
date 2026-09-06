@@ -45,7 +45,10 @@ public class ContaController {
 
         contas.salvar(novaConta);
 
-        registro.registrarEvento(ts, "CRIAR_CONTA", "id: " + req.id() + ", nome: " + req.nomeAluno() + ", saldoInicial: " + saldoInicial);
+        registro.registrarEvento(ts, "CRIAR_CONTA", Map.of(
+            "id", req.id(),
+            "nomeAluno", req.nomeAluno(),
+            "saldoInicial", saldoInicial));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(novaConta);
     }
@@ -71,7 +74,10 @@ public class ContaController {
         int ts = relogio.eventoLocal();
         conta.setSaldo(conta.getSaldo() + req.valor());
 
-        registro.registrarEvento(ts, "DEPOSITO", "id: " + id + ", valor: " + req.valor() + ", novoSaldo: " + conta.getSaldo());
+        registro.registrarEvento(ts, "DEPOSITO", Map.of(
+            "id", id,
+            "valor", req.valor(),
+            "novoSaldo", conta.getSaldo()));
 
         return ResponseEntity.ok(conta);
     }
@@ -91,7 +97,10 @@ public class ContaController {
         int ts = relogio.eventoLocal();
         conta.setSaldo(conta.getSaldo() - req.valor());
 
-        registro.registrarEvento(ts, "SAQUE", "id: " + id + ", valor: " + req.valor() + ", novoSaldo: " + conta.getSaldo());
+        registro.registrarEvento(ts, "SAQUE", Map.of(
+            "id", id,
+            "valor", req.valor(),
+            "novoSaldo", conta.getSaldo()));
 
         return ResponseEntity.ok(conta);
     }

@@ -40,8 +40,8 @@ public class EventLogService {
         }
     }
 
-    public void registrarEvento(int lamportTime, String operacao, String detalhes) {
-        EventoLog evento = EventoLog.criar(currentAgenciaId, lamportTime, operacao, detalhes);
+    public synchronized void registrarEvento(int timestampLamport, String tipo, Object detalhes) {
+        EventoLog evento = EventoLog.criar(currentAgenciaId, timestampLamport, tipo, detalhes);
         try {
             String json = objectMapper.writeValueAsString(evento);
             writer.write(json);
