@@ -1,27 +1,5 @@
-{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Ana, saldoInicial: 100.0","relogioParede":"2026-09-03T02:43:39.905470560Z"}
-{"agenciaId":0,"lamportTime":2,"operacao":"DEPOSITO","detalhes":"id: 0, valor: 25.0, novoSaldo: 125.0","relogioParede":"2026-09-03T02:45:48.862930193Z"}
-{"agenciaId":0,"lamportTime":3,"operacao":"SAQUE","detalhes":"id: 0, valor: 15.0, novoSaldo: 110.0","relogioParede":"2026-09-03T02:45:57.118496837Z"}
-{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 900, nome: Teste, saldoInicial: 100.0","relogioParede":"2026-09-06T01:41:46.838135740Z"}
-{"agenciaId":0,"lamportTime":2,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=900, idDestino=901, valor=30.0]","relogioParede":"2026-09-06T01:41:55.106726060Z"}
-{"agenciaId":0,"lamportTime":4,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=900, idDestino=902, valor=20.0]","relogioParede":"2026-09-06T01:41:55.357808698Z"}
-{"agenciaId":0,"lamportTime":6,"operacao":"TRANSFERENCIA_FALHOU","detalhes":"TransferenciaRequest[idOrigem=900, idDestino=902, valor=20.0], erro: Agência de destino respondeu HTTP 404","relogioParede":"2026-09-06T01:41:55.441737474Z"}
-{"agenciaId":0,"lamportTime":7,"operacao":"CRIAR_CONTA","detalhes":"id: 903, nome: Local, saldoInicial: 5.0","relogioParede":"2026-09-06T01:42:06.168393382Z"}
-{"agenciaId":0,"lamportTime":8,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=900, idDestino=903, valor=20.0]","relogioParede":"2026-09-06T01:42:06.179693598Z"}
-{"agenciaId":0,"lamportTime":9,"operacao":"TRANSFERENCIA_CREDITO","detalhes":"TransferenciaRequest[idOrigem=900, idDestino=903, valor=20.0]","relogioParede":"2026-09-06T01:42:06.179968029Z"}
-{"agenciaId":0,"lamportTime":10,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Ana, saldoInicial: 100.0","relogioParede":"2026-09-06T01:50:48.026206482Z"}
-{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Alice, saldoInicial: 100.0","relogioParede":"2026-09-06T02:09:02.854281677Z"}
-{"agenciaId":0,"lamportTime":2,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=1, valor=30.0]","relogioParede":"2026-09-06T02:12:23.262329215Z"}
-{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Ag1 Alice, saldoInicial: 1000.0","relogioParede":"2026-09-06T22:13:20.431372849Z"}
-{"agenciaId":0,"lamportTime":2,"operacao":"CRIAR_CONTA","detalhes":"id: 3, nome: Ag1 Ana, saldoInicial: 1000.0","relogioParede":"2026-09-06T22:14:49.987105988Z"}
-{"agenciaId":0,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 0, nome: Ag0 Alice, saldoInicial: 1000.0","relogioParede":"2026-09-06T22:23:51.434855420Z"}
-{"agenciaId":0,"lamportTime":2,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=70.0]","relogioParede":"2026-09-06T22:24:11.326803827Z"}
-{"agenciaId":0,"lamportTime":4,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=1, valor=250.0]","relogioParede":"2026-09-06T22:24:19.882981906Z"}
-{"agenciaId":0,"lamportTime":6,"operacao":"CRIAR_CONTA","detalhes":"id: 3, nome: AgO Ana, saldoInicial: 100.0","relogioParede":"2026-09-06T22:27:06.844713038Z"}
-{"agenciaId":0,"lamportTime":11,"operacao":"TRANSFERENCIA_CREDITO_REMOTO","detalhes":"idConta: 0, valor: 20.0, origemAgencia: 1","relogioParede":"2026-09-06T22:28:32.693124836Z"}
-{"agenciaId":0,"lamportTime":12,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=3, idDestino=0, valor=20.0]","relogioParede":"2026-09-06T22:28:53.425025504Z"}
-{"agenciaId":0,"lamportTime":13,"operacao":"TRANSFERENCIA_CREDITO","detalhes":"TransferenciaRequest[idOrigem=3, idDestino=0, valor=20.0]","relogioParede":"2026-09-06T22:28:53.425299197Z"}
-{"agenciaId":0,"lamportTime":14,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=20.0]","relogioParede":"2026-09-06T22:33:29.162691418Z"}
-{"agenciaId":0,"lamportTime":16,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=3, valor=20.0]","relogioParede":"2026-09-06T22:38:12.645690301Z"}
-{"agenciaId":0,"lamportTime":17,"operacao":"TRANSFERENCIA_CREDITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=3, valor=20.0]","relogioParede":"2026-09-06T22:38:12.645927897Z"}
-{"agenciaId":0,"lamportTime":18,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=40.0]","relogioParede":"2026-09-06T22:47:03.461400126Z"}
-{"agenciaId":0,"lamportTime":20,"operacao":"TRANSFERENCIA_FALHOU","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=40.0], erro: null","relogioParede":"2026-09-06T22:47:03.464566708Z"}
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-06T23:11:16.561300718Z","detalhes":{"nomeAluno":"Agencia 0","saldoInicial":100.0,"id":300}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":2,"horaParede":"2026-09-06T23:12:14.967792675Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":30.0}}
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampLamport":4,"horaParede":"2026-09-06T23:12:27.957407940Z","detalhes":{"nomeAluno":"Destino local","saldoInicial":0.0,"id":303}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":5,"horaParede":"2026-09-06T23:12:34.951216665Z","detalhes":{"idOrigem":300,"idDestino":303,"valor":20.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_CREDITO","timestampLamport":6,"horaParede":"2026-09-06T23:12:34.951629403Z","detalhes":{"idOrigem":300,"idDestino":303,"valor":20.0}}

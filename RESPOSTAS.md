@@ -21,3 +21,17 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. Pensando à frente para o Sprint 4: cite, em alto nível, duas formas possíveis de corrigir esse problema (não precisa implementar agora, só descrever a ideia).
 
 - R: Uma possibilidade é implementar o protocolo de confirmação em duas fases (2PC): a origem e o destino primeiro reservam/preparam a operação e somente depois confirmam o débito e o crédito quando ambas as partes estiverem prontas. Outra possibilidade é usar uma Saga: cada etapa é executada com eventos persistentes e, se uma etapa falhar, uma ação compensatória estorna o débito na origem ou desfaz o crédito no destino. Em ambos os casos, é necessário tratar falhas, reenvios e idempotência para evitar duplicação ou perda de transferências.
+
+10.3 Perguntas - Parte E
+
+1. Para esse par de eventos empatados: eles são realmente causalmente relacionados (um influenciou o outro) ou são concorrentes (aconteceram de forma independente)? Compare também com o campo `horaParede` de cada um - a ordem por hora de parede bate com a ordem por Lamport?
+
+- R: No resultado observado, o evento `TRANSFERENCIA_CREDITO_REMOTO` da Agência 1 e o evento `CRIAR_CONTA` da Agência 0 tiveram `timestampLamport` igual a 4. Eles são concorrentes entre si. O crédito remoto foi causado pelo débito anterior da transferência, mas a criação da conta 303 não influenciou nem foi influenciada por esse crédito. A `horaParede` mostrou o crédito remoto às 23:12:15 e a criação da conta às 23:12:27. Como os timestamps empataram, o script usou o horário registrado pela máquina apenas para organizar a exibição. Esse horário não estabelece causalidade.
+
+2. O relógio de Lamport garante que, se A aconteceu antes de B causalmente, `timestamp(A) < timestamp(B)`. Ele não garante a volta. O que isso significa na prática quando você vê dois eventos com timestamps diferentes na linha do tempo, mas sem saber se um realmente influenciou o outro?
+
+- R: Timestamps diferentes não provam, sozinhos, que um evento influenciou o outro. A relação de ordem de Lamport é suficiente para preservar uma ordem causal quando ela existe, mas eventos independentes também podem receber valores diferentes por causa da quantidade de eventos locais processados em cada agência. Portanto, ao ver dois timestamps diferentes, só é possível afirmar a ordem causal se houver evidência de comunicação ou dependência entre os eventos.
+
+3. Baseado no que você observou no passo 3 da tarefa: o relógio de Lamport, sozinho, seria suficiente para um sistema que precisa distinguir com certeza “A e B são concorrentes” de “A aconteceu antes de B”? Por que isso motiva o relógio vetorial do Sprint 2?
+
+- R: Não. O relógio de Lamport sozinho não permite distinguir com certeza todos os eventos concorrentes dos eventos causalmente relacionados. Ele registra apenas um contador inteiro por agência e não mantém a informação sobre cada processo. No experimento, eventos de agências diferentes empataram em Lamport e foram identificados como concorrentes pela ausência de comunicação entre eles, não pelo timestamp sozinho. O relógio vetorial é motivado por essa limitação porque mantém um contador por agência. Assim, é possível comparar os vetores e identificar quando um evento aconteceu antes de outro ou quando os eventos são realmente concorrentes.
