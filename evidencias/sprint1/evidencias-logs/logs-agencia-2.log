@@ -1,6 +1,3 @@
-{"agenciaId":2,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 2, nome: Carlos, saldoInicial: 250.0","relogioParede":"2026-09-06T02:09:54.489555516Z"}
-{"agenciaId":2,"lamportTime":2,"operacao":"CRIAR_CONTA","detalhes":"id: 302, nome: Agencia 2 - Conta A, saldoInicial: 100.0","relogioParede":"2026-09-06T02:15:21.735932518Z"}
-{"agenciaId":2,"lamportTime":3,"operacao":"CRIAR_CONTA","detalhes":"id: 305, nome: Agencia 2 - Conta B, saldoInicial: 50.0","relogioParede":"2026-09-06T02:15:21.745751924Z"}
 {"agenciaId":2,"lamportTime":4,"operacao":"CRIAR_CONTA","detalhes":"id: 5, nome: Daniel, saldoInicial: 1000.0","relogioParede":"2026-09-06T02:17:08.412085560Z"}
 {"agenciaId":2,"lamportTime":1,"operacao":"CRIAR_CONTA","detalhes":"id: 2, nome: Ag1 Caio, saldoInicial: 270.0","relogioParede":"2026-09-06T22:17:50.470845695Z"}
 {"agenciaId":2,"lamportTime":4,"operacao":"TRANSFERENCIA_CREDITO_REMOTO","detalhes":"idConta: 2, valor: 30.0, origemAgencia: 1","relogioParede":"2026-09-06T22:20:09.299426031Z"}

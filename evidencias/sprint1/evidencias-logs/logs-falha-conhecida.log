@@ -1,0 +1,2 @@
+{"agenciaId":0,"lamportTime":18,"operacao":"TRANSFERENCIA_DEBITO","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=40.0]","relogioParede":"2026-09-06T22:47:03.461400126Z"}
+{"agenciaId":0,"lamportTime":20,"operacao":"TRANSFERENCIA_FALHOU","detalhes":"TransferenciaRequest[idOrigem=0, idDestino=2, valor=40.0], erro: null","relogioParede":"2026-09-06T22:47:03.464566708Z"}
