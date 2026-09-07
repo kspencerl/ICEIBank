@@ -35,3 +35,23 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. Baseado no que você observou no passo 3 da tarefa: o relógio de Lamport, sozinho, seria suficiente para um sistema que precisa distinguir com certeza “A e B são concorrentes” de “A aconteceu antes de B”? Por que isso motiva o relógio vetorial do Sprint 2?
 
 - R: Não. O relógio de Lamport sozinho não permite distinguir com certeza todos os eventos concorrentes dos eventos causalmente relacionados. Ele registra apenas um contador inteiro por agência e não mantém a informação sobre cada processo. No experimento, eventos de agências diferentes empataram em Lamport e foram identificados como concorrentes pela ausência de comunicação entre eles, não pelo timestamp sozinho. O relógio vetorial é motivado por essa limitação porque mantém um contador por agência. Assim, é possível comparar os vetores e identificar quando um evento aconteceu antes de outro ou quando os eventos são realmente concorrentes.
+
+11.1 Decisões de autenticação
+
+- R: O login usa um usuário e uma senha configurados por variáveis de ambiente. Essa escolha mantém o exemplo simples e evita armazenar credenciais no código ou no repositório. O endpoint `POST /auth/login` valida as credenciais e retorna um JWT assinado com HMAC. O token possui expiração de 15 minutos por padrão, configurável por `JWT_EXPIRATION_SECONDS`.
+
+- R: Todas as rotas de contas e transferências exigem `Authorization: Bearer <token>`. A chamada entre agências também envia um JWT no mesmo cabeçalho para o endpoint `creditar-remoto`. Assim, a comunicação interna recebe a mesma validação de assinatura e expiração, sem deixar uma rota protegida aberta para chamadas sem autenticação. O segredo, o usuário e a senha são carregados do arquivo `.env`.
+
+11.3 Perguntas - Parte F
+
+1. Qual a diferença entre autenticação e autorização? Sua implementação verifica só uma das duas, ou as duas? Por exemplo, um usuário autenticado consegue sacar de uma conta que não é dele, na sua implementação atual?
+
+- R: Autenticação é confirmar a identidade de quem está fazendo a requisição. Neste projeto ela acontece quando o servidor valida as credenciais no login e depois verifica a assinatura e a expiração do JWT. Autorização é verificar se essa identidade tem permissão para executar uma ação específica. A implementação atual faz autenticação, mas ainda não faz autorização por conta. Portanto, qualquer usuário com um JWT válido consegue acessar, depositar ou sacar de qualquer conta existente, desde que conheça o identificador. Em um sistema real, seria necessário associar usuários a contas e verificar essa permissão em cada operação.
+
+2. Por que o servidor não precisa consultar um banco de dados para validar a assinatura de um JWT a cada requisição? O que isso implica sobre escalabilidade, comparado a guardar sessões em memória no servidor?
+
+- R: O servidor consegue validar o JWT usando a própria chave secreta, o algoritmo de assinatura e as informações de expiração presentes no token. Como a validação é local, não é necessário consultar um banco de dados ou uma sessão armazenada para confirmar a identidade. Isso facilita a escalabilidade horizontal, pois várias instâncias podem validar o mesmo token de forma independente quando compartilham a chave. Em comparação, sessões em memória exigem que o usuário volte ao mesmo servidor ou que exista uma sessão compartilhada entre as instâncias. O JWT reduz essa dependência, mas exige cuidados com expiração, revogação e proteção da chave.
+
+3. O que aconteceria com a segurança do sistema se a chave secreta usada para assinar o JWT vazasse?
+
+- R: Uma pessoa que obtivesse a chave poderia criar tokens com assinaturas válidas e se passar por usuários ou agências. Ela poderia acessar as rotas protegidas até que a chave fosse substituída ou os tokens expirassem. A resposta seria revogar a chave comprometida, gerar uma nova chave forte, atualizar o segredo em todas as agências e reiniciá-las. Também seria necessário invalidar os tokens antigos e investigar o uso indevido. Por isso a chave fica no `.env`, fora do Git, e em produção deve ser armazenada em um gerenciador de segredos com controle de acesso e rotação.

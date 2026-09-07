@@ -1,6 +1,7 @@
 package com.iceibank.agencia.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iceibank.agencia.auth.JwtService;
 import com.iceibank.agencia.config.AgenciaConfig;
 import com.iceibank.agencia.model.Conta;
 import com.iceibank.agencia.model.CreditoRemotoRequest;
@@ -34,6 +35,7 @@ public class TransferenciaController {
     private final RelogioLamport relogio;
     private final EventLogService registro;
     private final ObjectMapper objectMapper;
+    private final JwtService jwtService;
 
     @PostMapping("/transferencias")
     public ResponseEntity<?> transferir(@RequestBody TransferenciaRequest req) {
@@ -110,6 +112,7 @@ public class TransferenciaController {
                 .uri(URI.create(appRouting.resolverUrl(agenciaDestino)
                         + "/contas/" + transferencia.idDestino() + "/creditar-remoto"))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + jwtService.gerarToken("agencia-" + idAgenciaLocal))
                 .POST(HttpRequest.BodyPublishers.ofString(corpo))
                 .build();
 

@@ -1,6 +1,14 @@
 server:
   port: ${SERVER_PORT:4000}
 
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:900}
+  auth:
+    username: ${AUTH_USERNAME}
+    password: ${AUTH_PASSWORD}
+
 agencia:
   id: ${AGENCIA_ID:0} # instância em execução
 
