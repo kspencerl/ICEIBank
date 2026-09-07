@@ -55,3 +55,17 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. O que aconteceria com a segurança do sistema se a chave secreta usada para assinar o JWT vazasse?
 
 - R: Uma pessoa que obtivesse a chave poderia criar tokens com assinaturas válidas e se passar por usuários ou agências. Ela poderia acessar as rotas protegidas até que a chave fosse substituída ou os tokens expirassem. A resposta seria revogar a chave comprometida, gerar uma nova chave forte, atualizar o segredo em todas as agências e reiniciá-las. Também seria necessário invalidar os tokens antigos e investigar o uso indevido. Por isso a chave fica no `.env`, fora do Git, e em produção deve ser armazenada em um gerenciador de segredos com controle de acesso e rotação.
+
+12.3 Perguntas - Parte G
+
+1. Como o frontend “lembra” de reenviar o token em cada requisição depois do login? Descreva, em alto nível, o mecanismo que você implementou.
+
+- R: Depois do login, o frontend recebe o JWT e o armazena no `sessionStorage` do navegador com a chave `iceibank.token`. A função responsável pelas chamadas à API lê o valor atual dessa chave antes de cada requisição. Quando existe um token, ela adiciona automaticamente o cabeçalho `Authorization: Bearer <token>`. O token é removido quando a pessoa usuária encerra a sessão ou fecha a aba do navegador.
+
+2. Se o token expirar enquanto alguém está usando o frontend no meio de uma operação, o que acontece na sua implementação? A interface avisa a pessoa usuária, ou ela só vê um erro genérico?
+
+- R: A API rejeita a requisição com HTTP 401 quando o token expira. O frontend identifica esse status e exibe a mensagem “Sessao ausente ou expirada. Faca login novamente.” no painel da interface. Portanto, a pessoa usuária recebe um aviso específico em vez de apenas um erro genérico. Ela precisa fazer login novamente para obter um novo token.
+
+3. Esta unidade da disciplina trata de arquitetura MVC. No seu frontend, onde fica o “M” (Model), o “V” (View) e o “C” (Controller)? Eles existem de forma clara na sua implementação, ou o código ficou mais misturado do que o padrão sugere?
+
+- R: O frontend não implementa MVC formalmente. A View está no `index.html` e no `styles.css`, que definem a estrutura e a apresentação da interface. O estado mantido em `app.js`, como o token e a agência selecionada, funciona como um Model simples. As funções de requisição e os listeners dos formulários funcionam como Controllers, pois recebem ações da interface, chamam a API e atualizam a tela. Como o frontend é pequeno e foi feito sem framework, essas responsabilidades ficam reunidas no `app.js` em vez de separadas em módulos MVC distintos. A separação MVC é mais explícita no backend, com controllers, services e models.
