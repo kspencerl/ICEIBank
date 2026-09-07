@@ -3,3 +3,12 @@
 {"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampLamport":4,"horaParede":"2026-09-06T23:12:27.957407940Z","detalhes":{"nomeAluno":"Destino local","saldoInicial":0.0,"id":303}}
 {"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":5,"horaParede":"2026-09-06T23:12:34.951216665Z","detalhes":{"idOrigem":300,"idDestino":303,"valor":20.0}}
 {"agencia":"agencia-0","tipo":"TRANSFERENCIA_CREDITO","timestampLamport":6,"horaParede":"2026-09-06T23:12:34.951629403Z","detalhes":{"idOrigem":300,"idDestino":303,"valor":20.0}}
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-07T00:28:34.874134065Z","detalhes":{"id":0,"saldoInicial":1000.0,"nomeAluno":"AgO Ana"}}
+{"agencia":"agencia-0","tipo":"SAQUE","timestampLamport":2,"horaParede":"2026-09-07T00:34:11.047311877Z","detalhes":{"id":0,"valor":300.0,"novoSaldo":700.0}}
+{"agencia":"agencia-0","tipo":"DEPOSITO","timestampLamport":3,"horaParede":"2026-09-07T00:34:53.992600128Z","detalhes":{"id":0,"valor":300.0,"novoSaldo":1000.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":4,"horaParede":"2026-09-07T00:35:10.501386486Z","detalhes":{"idOrigem":0,"idDestino":1,"valor":300.0}}
+{"agencia":"agencia-0","tipo":"DEPOSITO","timestampLamport":6,"horaParede":"2026-09-07T00:36:39.134107542Z","detalhes":{"id":0,"valor":300.0,"novoSaldo":1000.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_CREDITO_REMOTO","timestampLamport":10,"horaParede":"2026-09-07T00:37:04.630607111Z","detalhes":{"valor":300.0,"origemAgencia":1,"idConta":0}}
+{"agencia":"agencia-0","tipo":"SAQUE","timestampLamport":11,"horaParede":"2026-09-07T00:38:43.295048518Z","detalhes":{"id":0,"valor":300.0,"novoSaldo":1000.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_CREDITO_REMOTO","timestampLamport":14,"horaParede":"2026-09-07T00:39:40.351087279Z","detalhes":{"valor":200.0,"origemAgencia":1,"idConta":0}}
+{"agencia":"agencia-0","tipo":"SAQUE","timestampLamport":15,"horaParede":"2026-09-07T00:45:08.926821427Z","detalhes":{"id":0,"valor":100.0,"novoSaldo":1100.0}}

@@ -1,71 +1,158 @@
-# ICEIBank - Sprint 1 (Agências)
+# ICEIBank Agencia
 
-Este projeto implementa uma simulação de sistema bancário distribuído com Relógio de Lamport, construído em Java 25 com Spring Boot.
+Backend distribuído do ICEIBank, implementado em Java 25 com Spring Boot. Cada processo representa uma agência e mantém em memória as contas sob sua responsabilidade.
 
 ## Requisitos
-* Java 25+
-* Linux/Mac (Bash) ou Windows (PowerShell)
 
-## Como executar as Agências
+- Java 25+
+- Gradle Wrapper incluído no projeto
+- Bash, Linux/macOS ou WSL/Git Bash no Windows
 
-O sistema utiliza particionamento de contas. É necessário subir três instâncias (Agências 0, 1 e 2) simultaneamente, cada uma em um terminal separado.
+## Configuração
 
-### 🐧 Linux / macOS (Bash)
-Abra três abas no terminal e execute:
+As configurações sensíveis ficam em `agencia/.env`, que não é versionado. Crie o arquivo a partir do modelo:
 
-**Terminal 1 (Agência 0):**
 ```bash
-AGENCIA_ID=0 SERVER_PORT=4000 ./gradlew bootRun
+cd agencia
+cp .env.example .env
 ```
 
-**Terminal 2 (Agência 1):**
-```bash
-AGENCIA_ID=1 SERVER_PORT=4001 ./gradlew bootRun
+Preencha os valores necessários:
+
+```dotenv
+JWT_SECRET=seu-segredo-base64
+JWT_EXPIRATION_SECONDS=900
+AUTH_USERNAME=admin
+AUTH_PASSWORD=admin123
 ```
 
-**Terminal 3 (Agência 2):**
+Use um segredo forte e diferente em ambientes reais. Todas as agências devem usar o mesmo `JWT_SECRET` para validar os tokens umas das outras.
+
+## Executar as agências
+
+Inicie cada agência em um terminal separado, a partir desta pasta:
+
 ```bash
-AGENCIA_ID=2 SERVER_PORT=4002 ./gradlew bootRun
+./run-agencia.sh 0
+./run-agencia.sh 1
+./run-agencia.sh 2
 ```
 
-### 🪟 Windows (PowerShell)
-Se estiver usando o PowerShell no Windows, a sintaxe das variáveis é diferente:
+As portas padrão são:
 
-**Terminal 1:** `$env:AGENCIA_ID=0; $env:SERVER_PORT=4000; ./gradlew bootRun`
+| Agência | Porta |
+| --- | ---: |
+| 0 | 4000 |
+| 1 | 4001 |
+| 2 | 4002 |
 
-**Terminal 2:** `$env:AGENCIA_ID=1; $env:SERVER_PORT=4001; ./gradlew bootRun`
+O launcher carrega o `.env` automaticamente. Também é possível informar uma porta diferente:
 
-**Terminal 3:** `$env:AGENCIA_ID=2; $env:SERVER_PORT=4002; ./gradlew bootRun`
+```bash
+./run-agencia.sh 0 4010
+```
 
+Para encerrar uma instância, pressione `Ctrl+C` no terminal correspondente.
 
-## Como Testar a API
+## Particionamento
 
-Em um quarto terminal (ou utilizando o Postman/Insomnia), envie requisições para a porta `4000`.
+Uma conta pertence a uma única agência, definida por `id da conta % 3`:
 
-**1. Criar a conta 0 (pertence à Agência 0):**
+```text
+id % 3 == 0 -> Agência 0
+id % 3 == 1 -> Agência 1
+id % 3 == 2 -> Agência 2
+```
+
+As contas são armazenadas em memória. Ao reiniciar uma agência, suas contas são perdidas e precisam ser criadas novamente.
+
+## Autenticação
+
+O login é público e retorna um JWT:
+
+```http
+POST /auth/login
+Content-Type: application/json
+```
+
+```json
+{
+  "usuario": "admin",
+  "senha": "admin123"
+}
+```
+
+As credenciais reais são as definidas no `.env`. Envie o token nas demais rotas:
+
+```http
+Authorization: Bearer <token>
+```
+
+O token expira conforme `JWT_EXPIRATION_SECONDS`, que vale 900 segundos por padrão. Rotas protegidas retornam `401` quando o token está ausente, inválido ou expirado.
+
+## API
+
+Todas as rotas abaixo, exceto `/auth/login`, exigem JWT.
+
+### Contas
+
+```text
+POST /contas
+GET  /contas/{id}
+POST /contas/{id}/depositar
+POST /contas/{id}/sacar
+```
+
+Exemplo de criação:
+
 ```bash
 curl -X POST http://localhost:4000/contas \
-     -H "Content-Type: application/json" \
-     -d '{"id":0, "nomeAluno":"Ana", "saldoInicial":100}'
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id":300,"nomeAluno":"Alice","saldoInicial":100}'
 ```
 
-**2. Consultar o saldo:**
+### Transferências
+
+```text
+POST /transferencias
+POST /contas/{id}/creditar-remoto
+```
+
+Exemplo de transferência:
+
+```json
+{
+  "idOrigem": 300,
+  "idDestino": 301,
+  "valor": 30
+}
+```
+
+O backend identifica automaticamente se a transferência é local ou entre agências. A chamada interna para `creditar-remoto` também usa um JWT técnico.
+
+## Relógio e logs
+
+Cada agência mantém seu próprio relógio de Lamport e grava eventos em JSON Lines:
+
+```text
+logs/eventos-agencia-0.log
+logs/eventos-agencia-1.log
+logs/eventos-agencia-2.log
+```
+
+Para gerar uma linha do tempo unificada:
+
 ```bash
-curl -X GET http://localhost:4000/contas/0
+node mesclar-logs.js
 ```
 
-**3. Depositar dinheiro:**
+O script ordena os eventos por `timestampLamport` e destaca timestamps empatados entre agências diferentes.
+
+## Testes
+
+Execute a suíte do projeto com:
+
 ```bash
-curl -X POST http://localhost:4000/contas/0/depositar \
-     -H "Content-Type: application/json" \
-     -d '{"valor":25}'
+./gradlew test
 ```
-
-**4. Sacar dinheiro:**
-```bash
-curl -X POST http://localhost:4000/contas/0/sacar \
-     -H "Content-Type: application/json" \
-     -d '{"valor":15}'
-```
-
-*Após executar as operações, observe que um arquivo `logs/eventos-agencia-0.log` será criado na raiz do projeto contendo os registros JSON com a evolução do Relógio de Lamport.*

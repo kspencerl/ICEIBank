@@ -1,2 +1,9 @@
 {"agencia":"agencia-1","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-06T23:11:27.461540567Z","detalhes":{"id":301,"nomeAluno":"Agencia 1","saldoInicial":100.0}}
 {"agencia":"agencia-1","tipo":"TRANSFERENCIA_CREDITO_REMOTO","timestampLamport":4,"horaParede":"2026-09-06T23:12:15.091808491Z","detalhes":{"idConta":301,"origemAgencia":0,"valor":30.0}}
+{"agencia":"agencia-1","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-07T00:29:06.026366111Z","detalhes":{"nomeAluno":"Ag1 Bia","saldoInicial":1500.0,"id":1}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_CREDITO_REMOTO","timestampLamport":6,"horaParede":"2026-09-07T00:35:10.614979223Z","detalhes":{"idConta":1,"origemAgencia":0,"valor":300.0}}
+{"agencia":"agencia-1","tipo":"DEPOSITO","timestampLamport":7,"horaParede":"2026-09-07T00:36:23.998468446Z","detalhes":{"novoSaldo":2000.0,"valor":200.0,"id":1}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":8,"horaParede":"2026-09-07T00:37:04.518283923Z","detalhes":{"idOrigem":1,"idDestino":0,"valor":300.0}}
+{"agencia":"agencia-1","tipo":"DEPOSITO","timestampLamport":10,"horaParede":"2026-09-07T00:39:01.866188788Z","detalhes":{"novoSaldo":1900.0,"valor":200.0,"id":1}}
+{"agencia":"agencia-1","tipo":"DEPOSITO","timestampLamport":11,"horaParede":"2026-09-07T00:39:18.068880704Z","detalhes":{"novoSaldo":2000.0,"valor":100.0,"id":1}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_DEBITO","timestampLamport":12,"horaParede":"2026-09-07T00:39:40.341814355Z","detalhes":{"idOrigem":1,"idDestino":0,"valor":200.0}}
