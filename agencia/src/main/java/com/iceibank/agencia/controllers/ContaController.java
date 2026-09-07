@@ -7,6 +7,7 @@ import com.iceibank.agencia.routing.AppRouting;
 import com.iceibank.agencia.services.EventLogService;
 import com.iceibank.agencia.services.RelogioLamport;
 import com.iceibank.agencia.services.ContaRepository;
+import com.iceibank.agencia.services.ValidacaoFinanceira;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class ContaController {
     private final RelogioLamport relogio;
     private final EventLogService registro;
     private final ContaRepository contas;
+    private final ValidacaoFinanceira validacaoFinanceira;
 
     @PostMapping
     public ResponseEntity<?> criarConta(@RequestBody CriarContaRequest req) {
@@ -37,6 +39,10 @@ public class ContaController {
         if (contas.existe(req.id())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("erro", "Conta já existe."));
+        }
+        if (!validacaoFinanceira.saldoInicialValido(req.saldoInicial())) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("erro", "O saldo inicial deve ser um valor finito e não negativo."));
         }
 
         int ts = relogio.eventoLocal();
@@ -70,6 +76,10 @@ public class ContaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("erro", "Conta não encontrada nesta agência."));
         }
+        if (!validacaoFinanceira.valorPositivo(req.valor())) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("erro", "O valor deve ser positivo e finito."));
+        }
 
         int ts = relogio.eventoLocal();
         conta.setSaldo(conta.getSaldo() + req.valor());
@@ -88,6 +98,10 @@ public class ContaController {
         if (conta == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("erro", "Conta não encontrada nesta agência."));
+        }
+        if (!validacaoFinanceira.valorPositivo(req.valor())) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("erro", "O valor deve ser positivo e finito."));
         }
         if (conta.getSaldo() < req.valor()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

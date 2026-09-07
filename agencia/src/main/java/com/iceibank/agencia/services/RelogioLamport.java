@@ -21,4 +21,8 @@ public class RelogioLamport {
     public int aoReceber(int timestamp) {
         return contador.verificarMax(timestamp);
     }
+
+    public int valorAtual() {
+        return contador.obterValorAtual();
+    }
 }

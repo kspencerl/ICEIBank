@@ -40,6 +40,18 @@ function openApp() {
   $('#appView').classList.remove('hidden');
   $('#signedInAs').textContent = `JWT ativo · localhost:${state.agency}`;
   setAgency(state.agency);
+  loadStatus();
+}
+
+async function loadStatus() {
+  try {
+    const body = await request('/status');
+    $('#statusAgency').textContent = `Agencia ${body.agencia}`;
+    $('#statusLamport').textContent = body.timestampLamport;
+    $('#statusAccounts').textContent = body.contasLocais;
+  } catch (error) {
+    showMessage('#appMessage', explainError(error, 'Nao foi possivel consultar o status da agencia.'));
+  }
 }
 
 function logout() {
@@ -64,7 +76,8 @@ $('#loginForm').addEventListener('submit', async (event) => {
 });
 
 $('#logoutButton').addEventListener('click', logout);
-$('#agencySelect').addEventListener('change', (event) => { setAgency(event.target.value); showMessage('#appMessage', `Agencia de entrada alterada para localhost:${event.target.value}.`, true); });
+$('#agencySelect').addEventListener('change', (event) => { setAgency(event.target.value); showMessage('#appMessage', `Agencia de entrada alterada para localhost:${event.target.value}.`, true); loadStatus(); });
+$('#refreshStatus').addEventListener('click', loadStatus);
 
 $('#balanceForm').addEventListener('submit', async (event) => {
   event.preventDefault();

@@ -69,3 +69,7 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. Esta unidade da disciplina trata de arquitetura MVC. No seu frontend, onde fica o “M” (Model), o “V” (View) e o “C” (Controller)? Eles existem de forma clara na sua implementação, ou o código ficou mais misturado do que o padrão sugere?
 
 - R: O frontend não implementa MVC formalmente. A View está no `index.html` e no `styles.css`, que definem a estrutura e a apresentação da interface. O estado mantido em `app.js`, como o token e a agência selecionada, funciona como um Model simples. As funções de requisição e os listeners dos formulários funcionam como Controllers, pois recebem ações da interface, chamam a API e atualizam a tela. Como o frontend é pequeno e foi feito sem framework, essas responsabilidades ficam reunidas no `app.js` em vez de separadas em módulos MVC distintos. A separação MVC é mais explícita no backend, com controllers, services e models.
+
+2.1 Funcionalidade adicional - status da agência
+
+- R: A funcionalidade adicional escolhida foi o endpoint autenticado `GET /status`. Ele informa a identidade da agência, o valor atual do relógio de Lamport e a quantidade de contas mantidas localmente. Escolhi esse recurso porque acrescenta uma capacidade observável de monitoramento sem misturar responsabilidades de negócio aos controllers de contas e transferências. Ele também ajuda a verificar qual processo está respondendo e qual é o estado local de cada agência.

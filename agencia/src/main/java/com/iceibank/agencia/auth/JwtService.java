@@ -29,10 +29,19 @@ public class JwtService {
     }
 
     public String gerarToken(String sujeito) {
+        return gerarToken(sujeito, "USUARIO");
+    }
+
+    public String gerarTokenAgencia(String sujeito) {
+        return gerarToken(sujeito, "AGENCIA");
+    }
+
+    private String gerarToken(String sujeito, String tipo) {
         Date agora = new Date();
         Date expiracao = new Date(agora.getTime() + expirationSeconds * 1000);
         return Jwts.builder()
                 .subject(sujeito)
+                .claim("tipo", tipo)
                 .issuedAt(agora)
                 .expiration(expiracao)
                 .signWith(signingKey)
@@ -50,6 +59,10 @@ public class JwtService {
 
     public String extrairSujeito(String token) {
         return extrairClaims(token).getSubject();
+    }
+
+    public String extrairTipo(String token) {
+        return extrairClaims(token).get("tipo", String.class);
     }
 
     public long getExpirationSeconds() {

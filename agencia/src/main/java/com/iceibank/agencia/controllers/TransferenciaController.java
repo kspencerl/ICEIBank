@@ -10,10 +10,12 @@ import com.iceibank.agencia.routing.AppRouting;
 import com.iceibank.agencia.services.ContaRepository;
 import com.iceibank.agencia.services.EventLogService;
 import com.iceibank.agencia.services.RelogioLamport;
+import com.iceibank.agencia.services.ValidacaoFinanceira;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -36,10 +38,11 @@ public class TransferenciaController {
     private final EventLogService registro;
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
+    private final ValidacaoFinanceira validacaoFinanceira;
 
     @PostMapping("/transferencias")
     public ResponseEntity<?> transferir(@RequestBody TransferenciaRequest req) {
-        if (req.valor() <= 0) {
+        if (!validacaoFinanceira.valorPositivo(req.valor())) {
             return ResponseEntity.badRequest().body(Map.of("erro", "O valor deve ser positivo."));
         }
 
@@ -86,7 +89,19 @@ public class TransferenciaController {
 
     @PostMapping("/contas/{id}/creditar-remoto")
     public ResponseEntity<?> creditarRemoto(@PathVariable int id,
-                                             @RequestBody CreditoRemotoRequest req) {
+                                             @RequestBody CreditoRemotoRequest req,
+                                             Authentication authentication) {
+        if (!validacaoFinanceira.valorPositivo(req.valor())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("erro", "O valor deve ser positivo e finito."));
+        }
+        if (req.origemAgencia() == idAgenciaLocal
+                || !authentication.getName().equals("agencia-" + req.origemAgencia())
+                || appRouting.obterAgenciaResponsavel(id).id() != idAgenciaLocal) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", "Chamada remota de agência não autorizada."));
+        }
+
         Conta conta = contas.buscar(id);
         if (conta == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -112,7 +127,7 @@ public class TransferenciaController {
                 .uri(URI.create(appRouting.resolverUrl(agenciaDestino)
                         + "/contas/" + transferencia.idDestino() + "/creditar-remoto"))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + jwtService.gerarToken("agencia-" + idAgenciaLocal))
+                .header("Authorization", "Bearer " + jwtService.gerarTokenAgencia("agencia-" + idAgenciaLocal))
                 .POST(HttpRequest.BodyPublishers.ofString(corpo))
                 .build();
 

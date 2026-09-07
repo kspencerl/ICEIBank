@@ -40,6 +40,7 @@ A interface permite:
 
 - autenticar no endpoint `/auth/login`;
 - escolher a agência de entrada entre as portas `4000`, `4001` e `4002`;
+- consultar o status da agência, incluindo Lamport e quantidade de contas locais;
 - consultar o saldo de uma conta;
 - depositar e sacar;
 - transferir entre contas da mesma agência ou de agências diferentes.

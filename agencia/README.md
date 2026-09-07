@@ -94,6 +94,26 @@ O token expira conforme `JWT_EXPIRATION_SECONDS`, que vale 900 segundos por padr
 
 Todas as rotas abaixo, exceto `/auth/login`, exigem JWT.
 
+### Status da agência
+
+O endpoint adicional de status permite consultar a identidade da agência, o valor atual do relógio de Lamport e a quantidade de contas mantidas localmente:
+
+```text
+GET /status
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "agencia": 0,
+  "timestampLamport": 3,
+  "contasLocais": 2
+}
+```
+
+Essa rota também exige JWT.
+
 ### Contas
 
 ```text
@@ -131,6 +151,10 @@ Exemplo de transferência:
 
 O backend identifica automaticamente se a transferência é local ou entre agências. A chamada interna para `creditar-remoto` também usa um JWT técnico.
 
+Valores de depósito, saque, transferência e crédito remoto devem ser positivos e finitos. O saldo inicial pode ser omitido ou deve ser zero ou maior.
+
+O JWT autentica o usuário da API. A associação entre um usuário e uma conta bancária não faz parte deste sprint, portanto a autorização individual por conta ainda não é aplicada.
+
 ## Relógio e logs
 
 Cada agência mantém seu próprio relógio de Lamport e grava eventos em JSON Lines:
@@ -156,3 +180,5 @@ Execute a suíte do projeto com:
 ```bash
 ./gradlew test
 ```
+
+Os testes unitários cobrem as validações financeiras em `src/test/java`.

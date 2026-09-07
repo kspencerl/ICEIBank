@@ -22,4 +22,8 @@ public class ContaRepository {
     public void salvar(Conta conta) {
         contas.put(conta.getId(), conta);
     }
+
+    public int quantidade() {
+        return contas.size();
+    }
 }

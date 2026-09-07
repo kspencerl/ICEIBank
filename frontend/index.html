@@ -54,6 +54,13 @@
           <div class="connection"><span class="pulse"></span><span id="signedInAs">JWT ativo</span></div>
         </div>
 
+        <section class="status-strip">
+          <div><p class="eyebrow">Status da agencia</p><strong id="statusAgency">--</strong></div>
+          <div><span class="status-label">Lamport</span><strong id="statusLamport">--</strong></div>
+          <div><span class="status-label">Contas locais</span><strong id="statusAccounts">--</strong></div>
+          <button id="refreshStatus" class="outline-button" type="button">Atualizar status</button>
+        </section>
+
         <section class="balance-panel">
           <div class="balance-copy"><p class="eyebrow">Saldo da conta</p><strong id="balanceValue">--</strong><span id="accountCaption">Informe uma conta para consultar</span></div>
           <form id="balanceForm" class="inline-form"><input id="balanceAccount" type="number" placeholder="ID da conta" required><button type="submit" class="outline-button">Consultar</button></form>

@@ -1,7 +1,7 @@
 package com.iceibank.agencia.model;
 
 public record CreditoRemotoRequest(
-        double valor,
+        Double valor,
         int timestampLamport,
         int origemAgencia
 ) {}
