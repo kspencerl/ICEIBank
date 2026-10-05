@@ -1,2 +1,1 @@
-{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-06T23:12:01.810356660Z","detalhes":{"saldoInicial":100.0,"id":302,"nomeAluno":"Agencia 2"}}
-{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-07T00:29:28.770840008Z","detalhes":{"saldoInicial":2700.0,"id":2,"nomeAluno":"Ag2 Caio"}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampVetorial":[0,0,1],"horaParede":"2026-10-05T23:35:53.132074364Z","detalhes":{"saldoInicial":0.0,"id":302,"nomeAluno":"Caio"}}

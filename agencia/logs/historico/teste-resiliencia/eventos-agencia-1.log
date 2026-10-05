@@ -1,0 +1,6 @@
+{"agencia":"agencia-1","tipo":"CRIAR_CONTA","timestampVetorial":[0,1,0],"horaParede":"2026-10-05T23:16:03.099811060Z","detalhes":{"nomeAluno":"Bia","id":301,"saldoInicial":0.0}}
+{"agencia":"agencia-1","tipo":"TRANSFERENCIA_CREDITO_REMOTO","timestampVetorial":[3,2,0],"horaParede":"2026-10-05T23:16:15.391389134Z","detalhes":{"idConta":301,"valor":30.0,"origemAgencia":0}}
+{"agencia":"agencia-1","tipo":"CREDITO_REMOTO_FALHOU","timestampVetorial":[5,1,0],"horaParede":"2026-10-05T23:23:14.982274299Z","detalhes":{"idConta":301,"valor":10.0,"origemAgencia":0,"motivo":"conta nao encontrada - mensagem enviada para a DLQ"}}
+{"agencia":"agencia-1","tipo":"CREDITO_REMOTO_FALHOU","timestampVetorial":[7,2,0],"horaParede":"2026-10-05T23:23:15.030555847Z","detalhes":{"idConta":301,"valor":10.0,"origemAgencia":0,"motivo":"conta nao encontrada - mensagem enviada para a DLQ"}}
+{"agencia":"agencia-1","tipo":"CREDITO_REMOTO_FALHOU","timestampVetorial":[9,1,0],"horaParede":"2026-10-05T23:26:57.773094569Z","detalhes":{"idConta":301,"valor":10.0,"origemAgencia":0,"motivo":"conta nao encontrada - mensagem enviada para a DLQ"}}
+{"agencia":"agencia-1","tipo":"CRIAR_CONTA","timestampVetorial":[9,2,0],"horaParede":"2026-10-05T23:30:36.031748013Z","detalhes":{"id":304,"nomeAluno":"Duda","saldoInicial":0.0}}

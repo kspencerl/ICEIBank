@@ -30,12 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7).trim();
             if (jwtService.ehValido(token)) {
                 String sujeito = jwtService.extrairSujeito(token);
-                String tipo = jwtService.extrairTipo(token);
-                var authorities = "AGENCIA".equals(tipo)
-                    ? AuthorityUtils.createAuthorityList("ROLE_AGENCIA")
-                    : AuthorityUtils.NO_AUTHORITIES;
                 var autenticacao = new UsernamePasswordAuthenticationToken(
-                    sujeito, null, authorities);
+                    sujeito, null, AuthorityUtils.NO_AUTHORITIES);
                 SecurityContextHolder.getContext().setAuthentication(autenticacao);
             }
         }

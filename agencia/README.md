@@ -24,7 +24,10 @@ JWT_SECRET=seu-segredo-base64
 JWT_EXPIRATION_SECONDS=900
 AUTH_USERNAME=admin
 AUTH_PASSWORD=admin123
+RABBITMQ_URL=amqps://usuario:senha@host.cloudamqp.com/vhost
 ```
+
+`RABBITMQ_URL` é a URL AMQP da sua instância CloudAMQP (painel da instância → campo **AMQP URL**). Sem ela a agência não inicia.
 
 Use um segredo forte e diferente em ambientes reais. Todas as agências devem usar o mesmo `JWT_SECRET` para validar os tokens umas das outras.
 
@@ -96,7 +99,7 @@ Todas as rotas abaixo, exceto `/auth/login`, exigem JWT.
 
 ### Status da agência
 
-O endpoint adicional de status permite consultar a identidade da agência, o valor atual do relógio de Lamport e a quantidade de contas mantidas localmente:
+O endpoint adicional de status permite consultar a identidade da agência, o valor atual do relógio vetorial e a quantidade de contas mantidas localmente:
 
 ```text
 GET /status
@@ -107,7 +110,7 @@ Exemplo de resposta:
 ```json
 {
   "agencia": 0,
-  "timestampLamport": 3,
+  "timestampVetorial": [3, 0, 1],
   "contasLocais": 2
 }
 ```
@@ -136,7 +139,6 @@ curl -X POST http://localhost:4000/contas \
 
 ```text
 POST /transferencias
-POST /contas/{id}/creditar-remoto
 ```
 
 Exemplo de transferência:
@@ -149,15 +151,32 @@ Exemplo de transferência:
 }
 ```
 
-O backend identifica automaticamente se a transferência é local ou entre agências. A chamada interna para `creditar-remoto` também usa um JWT técnico.
+O backend identifica automaticamente se a transferência é local ou entre agências. Entre agências, a origem debita e **publica uma mensagem no RabbitMQ**; a agência de destino consome e aplica o crédito de forma assíncrona. Por isso, `200` significa "mensagem publicada", não "crédito já aplicado". Se o broker estiver inacessível, o débito é desfeito e a API responde `503`.
 
 Valores de depósito, saque, transferência e crédito remoto devem ser positivos e finitos. O saldo inicial pode ser omitido ou deve ser zero ou maior.
 
 O JWT autentica o usuário da API. A associação entre um usuário e uma conta bancária não faz parte deste sprint, portanto a autorização individual por conta ainda não é aplicada.
 
-## Relógio e logs
+## Mensageria (RabbitMQ)
 
-Cada agência mantém seu próprio relógio de Lamport e grava eventos em JSON Lines:
+As agências se comunicam por publish/subscribe (código em `src/main/java/.../mensageria`):
+
+```text
+exchange iceibank.eventos (topic)
+  ├── agencia.0.creditar -> fila-agencia-0
+  ├── agencia.1.creditar -> fila-agencia-1
+  └── agencia.2.creditar -> fila-agencia-2
+```
+
+Exchange, filas e mensagens são duráveis: uma transferência para uma agência fora do ar fica retida na fila até ela voltar.
+
+**Dead-letter queue (funcionalidade adicional):** se o crédito não puder ser aplicado (ex.: a agência reiniciou e a conta em memória não existe mais), a mensagem é rejeitada e vai para `fila-agencia-{id}.dlq` em vez de ser descartada. Ela pode ser inspecionada no RabbitMQ Manager.
+
+> Se as filas já existirem no broker sem a configuração de dead-letter, o RabbitMQ recusa a declaração (`PRECONDITION_FAILED`). Apague as filas `fila-agencia-*` antigas no RabbitMQ Manager e suba as agências de novo.
+
+## Relógio vetorial e logs
+
+Cada agência mantém um relógio vetorial (`[a0, a1, a2]`) e grava eventos em JSON Lines:
 
 ```text
 logs/eventos-agencia-0.log
@@ -165,13 +184,13 @@ logs/eventos-agencia-1.log
 logs/eventos-agencia-2.log
 ```
 
-Para gerar uma linha do tempo unificada:
+Para gerar a linha do tempo causal:
 
 ```bash
 node mesclar-logs.js
 ```
 
-O script ordena os eventos por `timestampLamport` e destaca timestamps empatados entre agências diferentes.
+O script ordena os eventos por hora de parede e compara os vetores para listar os pares de eventos de agências diferentes que são **concorrentes** e os que são **causalmente relacionados**. Eventos antigos do Sprint 1 (sem vetor) são ignorados.
 
 ## Testes
 
@@ -181,4 +200,4 @@ Execute a suíte do projeto com:
 ./gradlew test
 ```
 
-Os testes unitários cobrem as validações financeiras em `src/test/java`.
+Os testes unitários cobrem as validações financeiras e as três regras do relógio vetorial em `src/test/java`.

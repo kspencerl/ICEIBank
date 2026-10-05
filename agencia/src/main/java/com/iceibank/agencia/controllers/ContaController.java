@@ -5,7 +5,7 @@ import com.iceibank.agencia.model.CriarContaRequest;
 import com.iceibank.agencia.model.TransacaoRequest;
 import com.iceibank.agencia.routing.AppRouting;
 import com.iceibank.agencia.services.EventLogService;
-import com.iceibank.agencia.services.RelogioLamport;
+import com.iceibank.agencia.services.RelogioVetorial;
 import com.iceibank.agencia.services.ContaRepository;
 import com.iceibank.agencia.services.ValidacaoFinanceira;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class ContaController {
     private int idAgenciaLocal;
 
     private final AppRouting appRouting;
-    private final RelogioLamport relogio;
+    private final RelogioVetorial relogio;
     private final EventLogService registro;
     private final ContaRepository contas;
     private final ValidacaoFinanceira validacaoFinanceira;
@@ -45,7 +45,7 @@ public class ContaController {
                 .body(Map.of("erro", "O saldo inicial deve ser um valor finito e não negativo."));
         }
 
-        int ts = relogio.eventoLocal();
+        int[] ts = relogio.eventoLocal();
         double saldoInicial = req.saldoInicial() != null ? req.saldoInicial() : 0.0;
         Conta novaConta = new Conta(req.id(), req.nomeAluno(), saldoInicial);
 
@@ -81,7 +81,7 @@ public class ContaController {
                 .body(Map.of("erro", "O valor deve ser positivo e finito."));
         }
 
-        int ts = relogio.eventoLocal();
+        int[] ts = relogio.eventoLocal();
         conta.setSaldo(conta.getSaldo() + req.valor());
 
         registro.registrarEvento(ts, "DEPOSITO", Map.of(
@@ -108,7 +108,7 @@ public class ContaController {
                     .body(Map.of("erro", "Saldo insuficiente."));
         }
 
-        int ts = relogio.eventoLocal();
+        int[] ts = relogio.eventoLocal();
         conta.setSaldo(conta.getSaldo() - req.valor());
 
         registro.registrarEvento(ts, "SAQUE", Map.of(

@@ -73,3 +73,51 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 2.1 Funcionalidade adicional - status da agência
 
 - R: A funcionalidade adicional escolhida foi o endpoint autenticado `GET /status`. Ele informa a identidade da agência, o valor atual do relógio de Lamport e a quantidade de contas mantidas localmente. Escolhi esse recurso porque acrescenta uma capacidade observável de monitoramento sem misturar responsabilidades de negócio aos controllers de contas e transferências. Ele também ajuda a verificar qual processo está respondendo e qual é o estado local de cada agência.
+
+# Sprint 2
+
+6.4 Perguntas - Parte B
+
+1. Com 3 agências, o vetor tem 3 posições. Se o sistema crescesse para 10 agências, o que aconteceria com o tamanho de cada vetor anexado a cada mensagem? Isso é um problema? Por quê (ou por que não)?
+
+- R: O vetor passaria a ter 10 posições, porque o relógio vetorial guarda um contador por processo. O tamanho cresce de forma linear com o número de agências, tanto em cada mensagem quanto em cada evento do log. Com 10 agências isso não é um problema: são 10 inteiros. Em sistemas com centenas ou milhares de processos, ou com processos entrando e saindo dinamicamente, o custo de rede e armazenamento cresce e passa a exigir otimizações, como enviar só as posições alteradas ou usar variações como version vectors com poda.
+
+2. Dado V1 = [3, 1, 0] e V2 = [3, 2, 0]: qual evento aconteceu primeiro, ou eles são concorrentes?
+
+- R: V1 aconteceu antes de V2. Comparando posição a posição: 3 <= 3, 1 <= 2 e 0 <= 0, e os vetores são diferentes (a posição 1 é menor em V1). Como V1[i] <= V2[i] para todo i, V1 → V2.
+
+3. Dado V1 = [3, 1, 0] e V2 = [1, 3, 0]: qual evento aconteceu primeiro, ou eles são concorrentes?
+
+- R: São concorrentes. Na posição 0, V1 é maior (3 > 1); na posição 1, V2 é maior (3 > 1). Nem V1 <= V2 nem V2 <= V1, então nenhum dos dois eventos influenciou o outro.
+
+7.5 Perguntas - Parte C
+
+1. No passo 4 da tarefa, o que aconteceu exatamente quando a Agência 1 voltou? Se a mensagem "sumiu" (não foi aplicada), isso foi porque a mensageria falhou, ou por outro motivo?
+
+- R: As mensagens foram entregues. Com a Agência 1 fora do ar, fiz duas transferências da conta 300 para a 301. As duas responderam HTTP 200 e ficaram retidas na `fila-agencia-1` (Ready = 2, 0 consumidores - `resiliencia-fila-2.png`). Quando a agência voltou, o consumidor recebeu as mensagens imediatamente, mas a conta 301 não existia mais, pois as contas ficam em memória e foram perdidas no reinício. O log registrou dois `CREDITO_REMOTO_FALHOU` com motivo "conta nao encontrada", com vetores `[5,1,0]` e `[7,2,0]`. Repeti o teste com mais uma transferência e o resultado foi o mesmo, com vetor `[9,1,0]` (`resiliencia-fila-3.png`). A mensageria funcionou: o problema foi a falta de persistência do estado da agência. Com a funcionalidade adicional, as mensagens não foram descartadas e ficaram na `fila-agencia-1.dlq` (Ready = 3 - `funcionalidade-adicional.png`).
+
+2. Compare esse comportamento com o do Sprint 1 (chamada REST direta): o que melhorou com a mensageria, e o que continua sendo um problema em aberto?
+
+- R: No Sprint 1, se a agência de destino estivesse fora do ar, a chamada REST falhava na hora e o débito ficava aplicado sem crédito. Agora a mensagem é durável e é entregue quando o destino volta, então a indisponibilidade temporária não perde a transferência. O problema em aberto é que "a mensagem não se perde" não significa "o sistema está correto": a origem já debitou e o destino pode não conseguir aplicar o crédito (conta inexistente), deixando o dinheiro fora das duas contas. Também não há confirmação de volta para a origem, estorno automático nem garantia de processamento único (idempotência). Isso exige persistência das contas e um protocolo de transação distribuída (2PC ou Saga, Sprint 4).
+
+3. O consumidor de mensagens processa créditos sem passar por nenhuma verificação de token JWT. Isso é um problema de segurança? Por que sim, ou por que não?
+
+- R: Sim. O consumidor confia em qualquer mensagem que chegue na fila. Hoje, qualquer pessoa com a `RABBITMQ_URL` (que contém usuário e senha) pode publicar na exchange `iceibank.eventos` com a routing key `agencia.1.creditar` e criar dinheiro em qualquer conta, sem passar pela API nem pelo JWT. No ambiente de desenvolvimento todas as agências usam a mesma credencial do broker, então a segurança depende apenas de proteger essa URL. Para mitigar, seria possível usar usuários do RabbitMQ com permissões separadas por agência, assinar as mensagens (por exemplo, com um JWT ou HMAC no corpo) e validar a assinatura no consumidor.
+
+8.3 Perguntas - Parte D
+
+1. No Sprint 1, o relógio de Lamport não permitia essa análise. O que exatamente, no relógio vetorial, torna possível essa comparação confiável?
+
+- R: O vetor guarda quanto cada agência sabe sobre os eventos de todas as outras. Cada posição só aumenta quando aquela agência gera um evento ou quando a informação chega por uma mensagem. Se V1 <= V2 em todas as posições, tudo que era conhecido em V1 já era conhecido em V2, então existe um caminho causal de V1 para V2. Se cada vetor tem alguma posição maior que o outro, cada evento conhece algo que o outro não conhece, o que prova a concorrência. O Lamport resume tudo em um único número e perde essa informação por processo.
+
+2. Encontre, no seu próprio teste, um par de eventos que o script classificou como concorrente. Faz sentido, olhando para o que cada evento representa?
+
+- R: `[agencia-0] CRIAR_CONTA [1,0,0]` e `[agencia-1] CRIAR_CONTA [0,1,0]` foram classificados como concorrentes. Faz sentido: são criações de contas em agências diferentes, sem nenhuma mensagem trocada entre elas antes. Cada agência só conhecia o próprio evento. Já `[agencia-0] TRANSFERENCIA_DEBITO [2,0,0]` e `[agencia-1] TRANSFERENCIA_CREDITO_REMOTO [3,2,0]` aparecem como causais (o débito aconteceu antes), pois o crédito só existiu por causa da mensagem publicada pela Agência 0.
+
+3. O algoritmo de comparação de vetores neste script é O(n²) no número de eventos. Isso seria um problema em um sistema real com milhões de eventos? O que se poderia fazer para tornar essa análise mais escalável?
+
+- R: Sim. Com 1 milhão de eventos seriam cerca de 500 bilhões de comparações, cada uma com custo proporcional ao número de agências. Para escalar, é possível limitar a análise a uma janela de tempo ou a uma transação, comparar apenas eventos de interesse (por exemplo, os que acessam a mesma conta) ou processar os eventos em ordem causal mantendo apenas a "fronteira" mais recente de cada agência. Também é possível guardar só as arestas causais diretas (envio → recebimento) e consultar a relação por alcançabilidade nesse grafo, em vez de comparar todos os pares.
+
+2.1 Funcionalidade adicional (Sprint 2) - fila de mensagens não processadas (dead-letter)
+
+- R: Cada fila de agência (`fila-agencia-{id}`) foi configurada com uma dead-letter exchange (`iceibank.dlx`). Quando o consumidor não consegue aplicar um crédito, por exemplo porque a conta não existe mais depois de um reinício, ele registra `CREDITO_REMOTO_FALHOU` e rejeita a mensagem sem reenfileirar (`AmqpRejectAndDontRequeueException`). O RabbitMQ então move a mensagem para `fila-agencia-{id}.dlq`. Assim, a mensagem não entra em loop de reprocessamento e também não é descartada: ela fica disponível no RabbitMQ Manager para análise ou reprocessamento manual. Escolhi esse recurso porque ele trata o cenário de falha da Parte C. Evidência: `evidencias/sprint2/funcionalidade-adicional.png`.

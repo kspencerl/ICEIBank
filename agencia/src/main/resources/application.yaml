@@ -1,6 +1,14 @@
 server:
   port: ${SERVER_PORT:4000}
 
+spring:
+  rabbitmq:
+    addresses: ${RABBITMQ_URL}
+
+logging:
+  level:
+    org.springframework.amqp.listener.ConditionalRejectingErrorHandler: error
+
 security:
   jwt:
     secret: ${JWT_SECRET}
@@ -13,8 +21,6 @@ agencia:
   id: ${AGENCIA_ID:0} # instância em execução
 
 agencia-routing:
-  host: "localhost"
-  basePort: 4000
   agencias:
     - id: 0
       name: "Nubank"

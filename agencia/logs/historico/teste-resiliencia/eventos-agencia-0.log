@@ -1,0 +1,13 @@
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampVetorial":[1,0,0],"horaParede":"2026-10-05T23:04:58.127126840Z","detalhes":{"saldoInicial":100.0,"id":300,"nomeAluno":"Ana"}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampVetorial":[2,0,0],"horaParede":"2026-10-05T23:05:28.723312606Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":30.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_PUBLICADA","timestampVetorial":[3,0,0],"horaParede":"2026-10-05T23:05:28.908679174Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":30.0}}
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampVetorial":[1,0,0],"horaParede":"2026-10-05T23:15:15.756870013Z","detalhes":{"nomeAluno":"Ana","id":300,"saldoInicial":100.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampVetorial":[2,0,0],"horaParede":"2026-10-05T23:16:14.979406036Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":30.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_PUBLICADA","timestampVetorial":[3,0,0],"horaParede":"2026-10-05T23:16:15.164164494Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":30.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampVetorial":[4,0,0],"horaParede":"2026-10-05T23:18:07.051177029Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_PUBLICADA","timestampVetorial":[5,0,0],"horaParede":"2026-10-05T23:18:07.052193789Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampVetorial":[6,0,0],"horaParede":"2026-10-05T23:18:35.673621288Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_PUBLICADA","timestampVetorial":[7,0,0],"horaParede":"2026-10-05T23:18:35.674807528Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_DEBITO","timestampVetorial":[8,0,0],"horaParede":"2026-10-05T23:26:30.018131144Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"TRANSFERENCIA_PUBLICADA","timestampVetorial":[9,0,0],"horaParede":"2026-10-05T23:26:30.019553825Z","detalhes":{"idOrigem":300,"idDestino":301,"valor":10.0}}
+{"agencia":"agencia-0","tipo":"CRIAR_CONTA","timestampVetorial":[10,0,0],"horaParede":"2026-10-05T23:30:35.876703154Z","detalhes":{"nomeAluno":"Caio","id":303,"saldoInicial":0.0}}
