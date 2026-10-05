@@ -3,8 +3,11 @@ server:
 
 spring:
   rabbitmq:
-    # URL AMQP da instância CloudAMQP (amqps://usuario:senha@host/vhost). Obrigatória.
     addresses: ${RABBITMQ_URL}
+
+logging:
+  level:
+    org.springframework.amqp.listener.ConditionalRejectingErrorHandler: error
 
 security:
   jwt:

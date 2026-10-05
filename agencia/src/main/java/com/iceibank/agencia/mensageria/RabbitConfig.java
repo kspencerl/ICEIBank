@@ -12,17 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Topologia do RabbitMQ (Parte A). O Spring declara tudo isso no broker ao conectar:
- *
- *   exchange "iceibank.eventos" (topic, durável)
- *       └── routing key "agencia.{id}.creditar" ──> fila "fila-agencia-{id}" (durável)
- *
- *   Funcionalidade adicional (dead-letter): mensagem rejeitada na fila principal
- *   ──> exchange "iceibank.dlx" (direct) ──> fila "fila-agencia-{id}.dlq" (durável)
- *
- * Cada agência declara apenas a SUA fila; quem publica só conhece a exchange e a routing key.
- */
+
 @Configuration
 public class RabbitConfig {
 
@@ -76,7 +66,6 @@ public class RabbitConfig {
         return BindingBuilder.bind(filaDlq).to(exchangeDlx).with(nomeFilaDlq(idAgencia));
     }
 
-    /** Envia/recebe as mensagens como JSON (em vez de objetos Java serializados). */
     @Bean
     public MessageConverter conversorJson() {
         return new JacksonJsonMessageConverter();

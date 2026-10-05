@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,9 @@ public class EventLogService {
             writer.write(json);
             writer.newLine();
             writer.flush();
+            // Também mostra no terminal da agência, como o console.log do eventLog.js do roteiro.
+            System.out.println("[Vetor " + Arrays.toString(timestampVetorial) + "] " + tipo + " "
+                    + objectMapper.writeValueAsString(detalhes));
         } catch (IOException e) {
             System.err.println("Falha ao gravar evento no log da agência " + currentAgenciaId + ": " + e.getMessage());
         }

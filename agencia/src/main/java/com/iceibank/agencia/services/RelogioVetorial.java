@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * 3. Recebimento: vetor[i] = max(vetor[i], recebido[i]) para todo i, depois incrementa a própria posição.
  *
  * Os métodos são synchronized porque requisições HTTP e o consumidor do RabbitMQ
- * rodam em threads diferentes. Sempre devolvemos uma cópia para ninguém alterar o vetor interno.
+ * rodam em threads diferentes. 
  */
 @Component
 public class RelogioVetorial {
