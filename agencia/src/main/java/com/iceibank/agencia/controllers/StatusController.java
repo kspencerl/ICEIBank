@@ -2,7 +2,7 @@ package com.iceibank.agencia.controllers;
 
 import com.iceibank.agencia.model.StatusAgenciaResponse;
 import com.iceibank.agencia.services.ContaRepository;
-import com.iceibank.agencia.services.RelogioLamport;
+import com.iceibank.agencia.services.RelogioVetorial;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +16,7 @@ public class StatusController {
     private int idAgencia;
 
     private final ContaRepository contas;
-    private final RelogioLamport relogio;
+    private final RelogioVetorial relogio;
 
     @GetMapping("/status")
     public StatusAgenciaResponse consultarStatus() {

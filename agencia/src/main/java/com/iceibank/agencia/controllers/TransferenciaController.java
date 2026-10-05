@@ -9,7 +9,7 @@ import com.iceibank.agencia.model.TransferenciaRequest;
 import com.iceibank.agencia.routing.AppRouting;
 import com.iceibank.agencia.services.ContaRepository;
 import com.iceibank.agencia.services.EventLogService;
-import com.iceibank.agencia.services.RelogioLamport;
+import com.iceibank.agencia.services.RelogioVetorial;
 import com.iceibank.agencia.services.ValidacaoFinanceira;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +34,7 @@ public class TransferenciaController {
 
     private final ContaRepository contas;
     private final AppRouting appRouting;
-    private final RelogioLamport relogio;
+    private final RelogioVetorial relogio;
     private final EventLogService registro;
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
@@ -56,7 +56,7 @@ public class TransferenciaController {
         }
 
         AgenciaConfig agenciaDestino = appRouting.obterAgenciaResponsavel(req.idDestino());
-        int tsDebito = relogio.eventoLocal();
+        int[] tsDebito = relogio.eventoLocal();
         contaOrigem.setSaldo(contaOrigem.getSaldo() - req.valor());
         registrar(tsDebito, "TRANSFERENCIA_DEBITO", detalhesTransferencia(req));
 
@@ -68,13 +68,13 @@ public class TransferenciaController {
                         .body(Map.of("erro", "Conta de destino não encontrada."));
             }
 
-            int tsCredito = relogio.eventoLocal();
+            int[] tsCredito = relogio.eventoLocal();
             contaDestino.setSaldo(contaDestino.getSaldo() + req.valor());
             registrar(tsCredito, "TRANSFERENCIA_CREDITO", detalhesTransferencia(req));
             return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (mesma agência)."));
         }
 
-        int tsEnvio = relogio.aoEnviar();
+        int[] tsEnvio = relogio.aoEnviar();
         try {
             enviarCreditoRemoto(agenciaDestino, req, tsEnvio);
             return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (entre agências)."));
@@ -108,7 +108,7 @@ public class TransferenciaController {
                     .body(Map.of("erro", "Conta não encontrada nesta agência."));
         }
 
-        int ts = relogio.aoReceber(req.timestampLamport());
+        int[] ts = relogio.aoReceber(req.vetorEnvio());
         conta.setSaldo(conta.getSaldo() + req.valor());
         registrar(ts, "TRANSFERENCIA_CREDITO_REMOTO", Map.of(
             "idConta", id,
@@ -120,9 +120,9 @@ public class TransferenciaController {
 
     private void enviarCreditoRemoto(AgenciaConfig agenciaDestino,
                                       TransferenciaRequest transferencia,
-                                      int timestampLamport) throws Exception {
+                                      int[] vetorEnvio) throws Exception {
         String corpo = objectMapper.writeValueAsString(new CreditoRemotoRequest(
-                transferencia.valor(), timestampLamport, idAgenciaLocal));
+                transferencia.valor(), vetorEnvio, idAgenciaLocal));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(appRouting.resolverUrl(agenciaDestino)
                         + "/contas/" + transferencia.idDestino() + "/creditar-remoto"))
@@ -146,7 +146,7 @@ public class TransferenciaController {
         return detalhes;
     }
 
-    private void registrar(int timestamp, String tipo, Object detalhes) {
+    private void registrar(int[] timestamp, String tipo, Object detalhes) {
         registro.registrarEvento(timestamp, tipo, detalhes);
     }
 }

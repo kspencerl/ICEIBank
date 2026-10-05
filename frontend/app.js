@@ -47,7 +47,7 @@ async function loadStatus() {
   try {
     const body = await request('/status');
     $('#statusAgency').textContent = `Agencia ${body.agencia}`;
-    $('#statusLamport').textContent = body.timestampLamport;
+    $('#statusVetor').textContent = JSON.stringify(body.timestampVetorial);
     $('#statusAccounts').textContent = body.contasLocais;
   } catch (error) {
     showMessage('#appMessage', explainError(error, 'Nao foi possivel consultar o status da agencia.'));
