@@ -15,6 +15,7 @@ expiration_override="${JWT_EXPIRATION_SECONDS-}"
 secret_override="${JWT_SECRET-}"
 username_override="${AUTH_USERNAME-}"
 password_override="${AUTH_PASSWORD-}"
+rabbitmq_override="${RABBITMQ_URL-}"
 
 set -a
 source .env
@@ -24,5 +25,11 @@ if [[ -n "$expiration_override" ]]; then export JWT_EXPIRATION_SECONDS="$expirat
 if [[ -n "$secret_override" ]]; then export JWT_SECRET="$secret_override"; fi
 if [[ -n "$username_override" ]]; then export AUTH_USERNAME="$username_override"; fi
 if [[ -n "$password_override" ]]; then export AUTH_PASSWORD="$password_override"; fi
+if [[ -n "$rabbitmq_override" ]]; then export RABBITMQ_URL="$rabbitmq_override"; fi
+
+if [[ -z "${RABBITMQ_URL-}" ]]; then
+  echo "Erro: defina RABBITMQ_URL no .env com a URL AMQP da sua instância CloudAMQP." >&2
+  exit 1
+fi
 
 exec env AGENCIA_ID="$id_agencia" SERVER_PORT="$porta" ./gradlew bootRun

@@ -12,7 +12,7 @@ function explainError(error, fallback = 'Nao foi possivel concluir a operacao.')
   if (error.status === 401) return 'Sessao ausente ou expirada. Faca login novamente.';
   if (error.status === 404) return 'Conta nao encontrada nesta agencia.';
   if (error.status === 400) return error.body?.erro || 'Operacao invalida. Confira os dados informados.';
-  if (error.status === 502) return 'A agencia de destino nao respondeu. O debito pode ter sido aplicado.';
+  if (error.status === 503) return 'Mensageria indisponivel. A transferencia nao foi realizada.';
   return error.body?.erro || fallback;
 }
 

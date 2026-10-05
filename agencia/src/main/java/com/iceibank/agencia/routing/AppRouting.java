@@ -24,11 +24,4 @@ public class AppRouting {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Agência " + agenciaIdAlvo + " não mapeada no YAML."));
     }
-
-    public String resolverUrl(AgenciaConfig agencia) {
-        return String.format("http://%s:%d", 
-            routingProperties.host(), 
-            routingProperties.basePort() + agencia.id()
-        );
-    }
 }

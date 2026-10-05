@@ -1,10 +1,9 @@
 package com.iceibank.agencia.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iceibank.agencia.auth.JwtService;
 import com.iceibank.agencia.config.AgenciaConfig;
+import com.iceibank.agencia.mensageria.MensageriaPublisher;
 import com.iceibank.agencia.model.Conta;
-import com.iceibank.agencia.model.CreditoRemotoRequest;
+import com.iceibank.agencia.model.CreditoRemotoMensagem;
 import com.iceibank.agencia.model.TransferenciaRequest;
 import com.iceibank.agencia.routing.AppRouting;
 import com.iceibank.agencia.services.ContaRepository;
@@ -12,16 +11,12 @@ import com.iceibank.agencia.services.EventLogService;
 import com.iceibank.agencia.services.RelogioVetorial;
 import com.iceibank.agencia.services.ValidacaoFinanceira;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.AmqpException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -36,8 +31,7 @@ public class TransferenciaController {
     private final AppRouting appRouting;
     private final RelogioVetorial relogio;
     private final EventLogService registro;
-    private final ObjectMapper objectMapper;
-    private final JwtService jwtService;
+    private final MensageriaPublisher mensageria;
     private final ValidacaoFinanceira validacaoFinanceira;
 
     @PostMapping("/transferencias")
@@ -56,9 +50,9 @@ public class TransferenciaController {
         }
 
         AgenciaConfig agenciaDestino = appRouting.obterAgenciaResponsavel(req.idDestino());
-        int[] tsDebito = relogio.eventoLocal();
+        int[] vetorDebito = relogio.eventoLocal();
         contaOrigem.setSaldo(contaOrigem.getSaldo() - req.valor());
-        registrar(tsDebito, "TRANSFERENCIA_DEBITO", detalhesTransferencia(req));
+        registrar(vetorDebito, "TRANSFERENCIA_DEBITO", detalhesTransferencia(req));
 
         if (agenciaDestino.id() == idAgenciaLocal) {
             Conta contaDestino = contas.buscar(req.idDestino());
@@ -68,74 +62,32 @@ public class TransferenciaController {
                         .body(Map.of("erro", "Conta de destino não encontrada."));
             }
 
-            int[] tsCredito = relogio.eventoLocal();
+            int[] vetorCredito = relogio.eventoLocal();
             contaDestino.setSaldo(contaDestino.getSaldo() + req.valor());
-            registrar(tsCredito, "TRANSFERENCIA_CREDITO", detalhesTransferencia(req));
+            registrar(vetorCredito, "TRANSFERENCIA_CREDITO", detalhesTransferencia(req));
             return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (mesma agência)."));
         }
 
-        int[] tsEnvio = relogio.aoEnviar();
+        // Sprint 2: em vez de chamar a outra agência por REST (Sprint 1), publicamos um evento
+        // no RabbitMQ. A agência de destino consome quando puder; se estiver fora do ar,
+        // a mensagem fica retida na fila durável e é entregue quando ela voltar.
+        int[] vetorEnvio = relogio.aoEnviar();
         try {
-            enviarCreditoRemoto(agenciaDestino, req, tsEnvio);
-            return ResponseEntity.ok(Map.of("mensagem", "Transferência concluída (entre agências)."));
-        } catch (Exception erro) {
-                Map<String, Object> detalhes = detalhesTransferencia(req);
-                detalhes.put("erro", erro.getMessage());
-                registrar(relogio.eventoLocal(), "TRANSFERENCIA_FALHOU", detalhes);
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
-                    "erro", "Falha ao contatar agência de destino. Débito já aplicado - inconsistência conhecida (ver Sprint 4)."));
+            mensageria.publicarCredito(agenciaDestino.id(),
+                    new CreditoRemotoMensagem(req.idDestino(), req.valor(), vetorEnvio, idAgenciaLocal));
+        } catch (AmqpException erro) {
+            // Broker inacessível: nada foi publicado, então desfazemos o débito.
+            contaOrigem.setSaldo(contaOrigem.getSaldo() + req.valor());
+            Map<String, Object> detalhes = detalhesTransferencia(req);
+            detalhes.put("erro", erro.getMessage());
+            registrar(relogio.eventoLocal(), "TRANSFERENCIA_FALHOU", detalhes);
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("erro", "Mensageria indisponível. A transferência não foi realizada."));
         }
-    }
+        registrar(vetorEnvio, "TRANSFERENCIA_PUBLICADA", detalhesTransferencia(req));
 
-    @PostMapping("/contas/{id}/creditar-remoto")
-    public ResponseEntity<?> creditarRemoto(@PathVariable int id,
-                                             @RequestBody CreditoRemotoRequest req,
-                                             Authentication authentication) {
-        if (!validacaoFinanceira.valorPositivo(req.valor())) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("erro", "O valor deve ser positivo e finito."));
-        }
-        if (req.origemAgencia() == idAgenciaLocal
-                || !authentication.getName().equals("agencia-" + req.origemAgencia())
-                || appRouting.obterAgenciaResponsavel(id).id() != idAgenciaLocal) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("erro", "Chamada remota de agência não autorizada."));
-        }
-
-        Conta conta = contas.buscar(id);
-        if (conta == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("erro", "Conta não encontrada nesta agência."));
-        }
-
-        int[] ts = relogio.aoReceber(req.vetorEnvio());
-        conta.setSaldo(conta.getSaldo() + req.valor());
-        registrar(ts, "TRANSFERENCIA_CREDITO_REMOTO", Map.of(
-            "idConta", id,
-            "valor", req.valor(),
-            "origemAgencia", req.origemAgencia()));
-
-        return ResponseEntity.ok(Map.of("mensagem", "Crédito remoto aplicado.", "saldoAtual", conta.getSaldo()));
-    }
-
-    private void enviarCreditoRemoto(AgenciaConfig agenciaDestino,
-                                      TransferenciaRequest transferencia,
-                                      int[] vetorEnvio) throws Exception {
-        String corpo = objectMapper.writeValueAsString(new CreditoRemotoRequest(
-                transferencia.valor(), vetorEnvio, idAgenciaLocal));
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(appRouting.resolverUrl(agenciaDestino)
-                        + "/contas/" + transferencia.idDestino() + "/creditar-remoto"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + jwtService.gerarTokenAgencia("agencia-" + idAgenciaLocal))
-                .POST(HttpRequest.BodyPublishers.ofString(corpo))
-                .build();
-
-        HttpResponse<String> response = HttpClient.newHttpClient()
-                .send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException("Agência de destino respondeu HTTP " + response.statusCode());
-        }
+        // 200 aqui significa "mensagem publicada", não "crédito já aplicado" (entrega assíncrona).
+        return ResponseEntity.ok(Map.of("mensagem", "Transferência publicada para a agência de destino (entrega assíncrona)."));
     }
 
     private Map<String, Object> detalhesTransferencia(TransferenciaRequest req) {
@@ -146,7 +98,7 @@ public class TransferenciaController {
         return detalhes;
     }
 
-    private void registrar(int[] timestamp, String tipo, Object detalhes) {
-        registro.registrarEvento(timestamp, tipo, detalhes);
+    private void registrar(int[] timestampVetorial, String tipo, Object detalhes) {
+        registro.registrarEvento(timestampVetorial, tipo, detalhes);
     }
 }
