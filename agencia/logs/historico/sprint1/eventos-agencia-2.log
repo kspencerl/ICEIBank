@@ -1,0 +1,8 @@
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-06T23:12:01.810356660Z","detalhes":{"saldoInicial":100.0,"id":302,"nomeAluno":"Agencia 2"}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-07T00:29:28.770840008Z","detalhes":{"saldoInicial":2700.0,"id":2,"nomeAluno":"Ag2 Caio"}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-29T00:08:00.687840639Z","detalhes":{"id":2,"nomeAluno":"Ag2 Claudio","saldoInicial":1500.0}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":2,"horaParede":"2026-09-29T00:08:29.366283420Z","detalhes":{"id":5,"nomeAluno":"Ag2 Pedro","saldoInicial":1000.0}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":3,"horaParede":"2026-09-29T00:09:24.555530369Z","detalhes":{"id":8,"nomeAluno":"Ag2 Lia","saldoInicial":1000.0}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-29T00:14:42.619248770Z","detalhes":{"nomeAluno":"Ag2 Carlos","id":2,"saldoInicial":1500.0}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":2,"horaParede":"2026-09-29T00:14:59.145629018Z","detalhes":{"nomeAluno":"Ag2 Cunha","id":5,"saldoInicial":2000.0}}
+{"agencia":"agencia-2","tipo":"CRIAR_CONTA","timestampLamport":1,"horaParede":"2026-09-29T00:51:58.079135325Z","detalhes":{"nomeAluno":"Ag2 Carlos","saldoInicial":2000.0,"id":2}}
