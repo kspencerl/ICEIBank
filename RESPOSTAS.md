@@ -151,3 +151,9 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. O TIMEOUT_MS de 1 segundo é usado tanto para detectar uma agência fora do ar quanto para decidir se alguém respondeu a uma eleição. O que aconteceria se a rede estivesse genuinamente lenta (não a agência fora do ar, só uma resposta demorada) e isso ultrapassasse 1 segundo?
 
 - R: A agência seria considerada indisponível mesmo estando ativa, porque o timeout não distingue queda de lentidão. No heartbeat, isso poderia disparar uma eleição desnecessária. Durante a eleição, uma agência de ID superior que demorasse a responder poderia ser ignorada, permitindo que uma de ID menor se declarasse líder. Temporariamente, as agências poderiam discordar sobre quem lidera. Aumentar o timeout reduz essas suspeitas falsas, mas também atrasa a detecção de falhas reais.
+
+## 7.3 Perguntas — Parte C
+
+1. Observando a saída do script, quantas vezes a liderança mudou de mãos durante a "tempestade" de eleições da subida inicial (Parte A), antes de estabilizar? Isso tem algum custo real para o sistema (rede, tempo), mesmo não afetando o resultado final?
+
+- R: Na subida inicial da Parte A houve uma troca de liderança da agência 0 para a agência 2. A agência 0 se declarou líder às 15:49:38, e a agência 2 assumiu às 15:50:04. A declaração repetida da agência 2 às 15:50:05 não conta como nova troca, pois a líder continuou sendo a mesma. Sim, há custo real, as eleições geram mensagens na rede, processamento e gravação de logs, além de consumir tempo até todas as agências concordarem sobre a líder. Mesmo assim, o sistema convergiu para a agência 2, o maior ID ativo.
