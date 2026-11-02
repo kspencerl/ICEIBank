@@ -31,3 +31,5 @@ agencia-routing:
 
 bully:
   urls: ${BULLY_URLS:http://localhost:4000,http://localhost:4001,http://localhost:4002}
+  heartbeat-ms: 3000
+  timeout-ms: 1000

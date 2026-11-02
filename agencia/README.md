@@ -95,7 +95,7 @@ O token expira conforme `JWT_EXPIRATION_SECONDS`, que vale 900 segundos por padr
 
 ## API
 
-Todas as rotas abaixo, exceto `/auth/login`, exigem JWT.
+As rotas bancárias abaixo exigem JWT. `/auth/login` e as três rotas Bully descritas na Parte A são públicas.
 
 ### Status da agência
 
@@ -201,3 +201,41 @@ Execute a suíte do projeto com:
 ```
 
 Os testes unitários cobrem as validações financeiras e as três regras do relógio vetorial em `src/test/java`.
+
+## Sprint 3 — Parte A: eleição inicial
+
+Cada agência inicia uma eleição quando o servidor está pronto. O maior ID ativo vence. O heartbeat é descrito na Parte B abaixo.
+
+As URLs estão em `src/main/resources/application.yaml`, na propriedade `bully.urls`, em ordem de ID 0, 1 e 2. O padrão usa portas 4000, 4001 e 4002. Para outras portas, configure `BULLY_URLS` no `.env` e informe a porta ao launcher.
+
+Execute um comando em cada terminal, na pasta `agencia`:
+
+```bash
+./run-agencia.sh 0
+./run-agencia.sh 1
+./run-agencia.sh 2
+```
+
+Depois de as três iniciarem, consulte no Postman (GET, No Auth) ou no terminal:
+
+```bash
+curl http://localhost:4000/bully/lider
+curl http://localhost:4001/bully/lider
+curl http://localhost:4002/bully/lider
+```
+
+Cada resposta informa `idAgencia` e `liderAtual`. As três devem indicar líder 2.
+
+As rotas `POST /bully/eleicao`, `POST /bully/coordenador` e `GET /bully/lider` são públicas conforme o roteiro. Operações bancárias continuam exigindo JWT. Os eventos da eleição são gravados nos logs existentes e transportam o relógio vetorial.
+
+Testes: `./gradlew test`. Evidências e resultados da execução: [evidencias/sprint3/README.md](../evidencias/sprint3/README.md). Respostas conceituais: [RESPOSTAS.md](../RESPOSTAS.md).
+
+## Sprint 3 — Parte B: heartbeat e failover
+
+Após a eleição inicial, cada agência consulta a líder em `GET /bully/lider` a cada 3 segundos. Se ela não responder com HTTP 200 dentro do timeout, registra `LIDER_NAO_RESPONDEU`, esquece a líder e inicia outra eleição. A própria líder não consulta a si mesma. Ao voltar, uma agência inicia sua eleição normalmente e pode reassumir a liderança se tiver o maior ID.
+
+Configuração em `src/main/resources/application.yaml`: `bully.heartbeat-ms: 3000` e `bully.timeout-ms: 1000`. O intervalo é contado após cada verificação terminar; a detecção inclui a espera do timeout e a eleição leva tempo adicional.
+
+Para testar, suba as três agências com os comandos anteriores e confirme líder 2. Encerre a agência 2 com `Ctrl+C`, aguarde a reeleição e consulte `/bully/lider` nas portas 4000 e 4001: ambas devem indicar líder 1. Suba a agência 2 novamente e confirme que as três voltam à líder 2.
+
+Capture a queda, os logs da reeleição e as duas respostas com data visível (`date -Is`) em `evidencias/sprint3/failover.png`. Consulte também o [roteiro da evidência](../evidencias/sprint3/README.md).
