@@ -121,3 +121,19 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 2.1 Funcionalidade adicional (Sprint 2) - fila de mensagens não processadas (dead-letter)
 
 - R: Cada fila de agência (`fila-agencia-{id}`) foi configurada com uma dead-letter exchange (`iceibank.dlx`). Quando o consumidor não consegue aplicar um crédito, por exemplo porque a conta não existe mais depois de um reinício, ele registra `CREDITO_REMOTO_FALHOU` e rejeita a mensagem sem reenfileirar (`AmqpRejectAndDontRequeueException`). O RabbitMQ então move a mensagem para `fila-agencia-{id}.dlq`. Assim, a mensagem não entra em loop de reprocessamento e também não é descartada: ela fica disponível no RabbitMQ Manager para análise ou reprocessamento manual. Escolhi esse recurso porque ele trata o cenário de falha da Parte C. Evidência: `evidencias/sprint2/funcionalidade-adicional.png`.
+
+# Sprint 3
+
+## 5.5 Perguntas — Parte A
+
+1. Por que o algoritmo de Bully sempre elege o processo de maior ID, e não o de menor? O resultado seria diferente (mas ainda assim correto) se a regra fosse invertida?
+
+- R: Porque o algoritmo define o maior ID como prioridade. Cada agência consulta as de ID superior e só assume a liderança se nenhuma responder. A maior agência ativa não tem nenhuma superior ativa, por isso vence. Se a regra fosse invertida em todas as agências, incluindo a direção das consultas, venceria o menor ID ativo. O resultado seria diferente, mas continuaria correto sob as mesmas condições de comunicação e disponibilidade. O importante é que todas sigam a mesma regra e tenham IDs únicos.
+
+2. No passo 4 da tarefa, você deve ter visto mais de uma agência declarar TORNOU_LIDER durante a subida, antes de convergir. Isso é um bug, ou um comportamento esperado do algoritmo? Justifique com base no que você observou nos logs.
+
+- R: É esperado durante a subida, pois as agências podem iniciar em momentos diferentes e uma candidata pode não obter resposta das superiores que ainda estão iniciando. Nos logs, a agência 0 registrou `TORNOU_LIDER` às 15:49:38. Depois a agência 2 assumiu às 15:50:04 e repetiu o anúncio às 15:50:05 após outra eleição recebida. Essa repetição da agência 2 não representa uma nova troca de liderança. As agências 0 e 1 receberam `LIDER_ANUNCIADO` com líder 2 e as consultas às portas 4000, 4001 e 4002 retornaram HTTP 200 com `liderAtual: 2`. Portanto, houve uma liderança transitória da agência 0 e convergência para a agência 2, conforme `evidencias/sprint3/eleicao-inicial.png` e as três capturas de `eleicao-inicial-postman-*.png`.
+
+3. O endpoint /bully/eleicao não tem nenhuma autenticação. Qualquer processo que descubra a URL de uma agência pode disparar uma eleição nela. Isso é um problema de segurança real para este projeto? Por quê, ou por que não?
+
+- R: Sim. Nesta implementação, `/bully/eleicao` é públic. Um processo com acesso à API pode enviar mensagens válidas repetidamente e provocar eleições desnecessárias, consumindo processamento, rede e espaço nos logs. Validar IDs e vetores não comprova a identidade do remetente. Como o líder ainda é informativo, isso não concede acesso direto às operações bancárias, que continuam protegidas por JWT, mas pode prejudicar a disponibilidade do sistema. Em um ambiente real, as mensagens deveriam ser autenticadas e autorizadas como comunicação entre agências, com acesso de rede restrito.
