@@ -28,3 +28,6 @@ agencia-routing:
       name: "Itau"
     - id: 2
       name: "Bradesco"
+
+bully:
+  urls: ${BULLY_URLS:http://localhost:4000,http://localhost:4001,http://localhost:4002}
