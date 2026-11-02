@@ -137,3 +137,17 @@ Se a Agência 0 está no evento de contador 10 e recebe uma mensagem com timesta
 3. O endpoint /bully/eleicao não tem nenhuma autenticação. Qualquer processo que descubra a URL de uma agência pode disparar uma eleição nela. Isso é um problema de segurança real para este projeto? Por quê, ou por que não?
 
 - R: Sim. Nesta implementação, `/bully/eleicao` é públic. Um processo com acesso à API pode enviar mensagens válidas repetidamente e provocar eleições desnecessárias, consumindo processamento, rede e espaço nos logs. Validar IDs e vetores não comprova a identidade do remetente. Como o líder ainda é informativo, isso não concede acesso direto às operações bancárias, que continuam protegidas por JWT, mas pode prejudicar a disponibilidade do sistema. Em um ambiente real, as mensagens deveriam ser autenticadas e autorizadas como comunicação entre agências, com acesso de rede restrito.
+
+## 6.4 Perguntas — Parte B
+
+1. O que aconteceria se o intervalo do heartbeat (intervaloMs) fosse muito curto (ex.: 100ms)? E se fosse muito longo (ex.: 60 segundos)? Pense no trade-off entre detectar falhas rápido e sobrecarregar a rede com verificações.
+
+- R: Com 100 ms, as verificações seriam mais frequentes e poderiam detectar uma falha mais rápido, mas consumiriam mais rede e processamento. Com 60 segundos, esse custo seria menor, porém as agências poderiam passar quase um minuto sem perceber que a líder caiu, além do tempo do timeout e da eleição. Na implementação usamos 3 segundos entre verificações e timeout de 1 segundo, equilibrando tempo de resposta e tráfego. O heartbeat não confirma a falha instantaneamente, ele precisa fazer a consulta e aguardar seu resultado.
+
+2. No passo 6 da tarefa, a agência que você derrubou e subiu de novo pode, dependendo do ID dela, "tomar" a liderança de volta mesmo que a eleição atual estivesse funcionando bem. Isso é desejável? Que problema prático isso pode causar em um sistema real (pense em uma troca de liderança acontecendo bem no meio de uma operação importante)?
+
+- R: Isso mantém a regra do Bully, mas não é necessariamente desejável operacionalmente, uma líder funcionando bem pode ser substituída apenas porque uma agência de maior ID voltou. No teste, a agência 1 registrou `LIDER_NAO_RESPONDEU` para a líder 2 às 16:24:33 e assumiu a liderança. Ao reiniciar, a agência 2 registrou `TORNOU_LIDER` às 16:26:47, e as agências 0 e 1 receberam seu anúncio conforme os logs. Em um sistema real, trocar a coordenação durante uma operação poderia interromper seu andamento ou provocar ações duplicadas se a recuperação não fosse controlada. Nessa sprint a líder é apenas informativa e não coordena as operações bancárias. A queda e a eleição da agência 1 aparecem em `evidencias/sprint3/failover.png`.
+
+3. O TIMEOUT_MS de 1 segundo é usado tanto para detectar uma agência fora do ar quanto para decidir se alguém respondeu a uma eleição. O que aconteceria se a rede estivesse genuinamente lenta (não a agência fora do ar, só uma resposta demorada) e isso ultrapassasse 1 segundo?
+
+- R: A agência seria considerada indisponível mesmo estando ativa, porque o timeout não distingue queda de lentidão. No heartbeat, isso poderia disparar uma eleição desnecessária. Durante a eleição, uma agência de ID superior que demorasse a responder poderia ser ignorada, permitindo que uma de ID menor se declarasse líder. Temporariamente, as agências poderiam discordar sobre quem lidera. Aumentar o timeout reduz essas suspeitas falsas, mas também atrasa a detecção de falhas reais.
